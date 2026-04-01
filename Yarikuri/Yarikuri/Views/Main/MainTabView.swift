@@ -388,9 +388,9 @@ struct ProtectSummaryCard: View {
     var body: some View {
         HStack(spacing: 0) {
             VStack(spacing: 4) {
-                Text("💰").font(.system(size: 20))
+                Text("💰").font(.system(size: 22))
                 Text(appState.monthlyTotalExpenses.yen)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundColor(AppColor.primary)
                     .minimumScaleFactor(0.7).lineLimit(1)
                 Text("今月の支出")
@@ -406,9 +406,9 @@ struct ProtectSummaryCard: View {
             Divider().frame(height: 40)
 
             VStack(spacing: 4) {
-                Text("📚").font(.system(size: 20))
+                Text("📚").font(.system(size: 22))
                 Text("\(appState.monthlyProtectActions.count)件")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundColor(AppColor.secondary)
                 Text("今月確認したこと")
                     .font(.system(size: 10))
