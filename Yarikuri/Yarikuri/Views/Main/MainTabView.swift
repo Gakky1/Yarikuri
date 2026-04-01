@@ -85,6 +85,7 @@ struct CommunityScreenView: View {
                     Spacer().frame(height: 20)
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 12)
             }
         }
     }
@@ -164,6 +165,7 @@ struct ProtectScreenView: View {
                     Spacer().frame(height: 20)
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 12)
             }
         }
         .sheet(isPresented: $showReport)       { MonthlyReportView() }
@@ -311,6 +313,7 @@ struct GrowScreenView: View {
                     Spacer().frame(height: 20)
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 12)
             }
         }
         .sheet(isPresented: $showReport)     { MonthlyReportView() }
