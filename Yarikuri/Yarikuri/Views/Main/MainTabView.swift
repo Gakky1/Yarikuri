@@ -529,14 +529,14 @@ struct GrowSummaryCard: View {
         HStack(spacing: 0) {
             VStack(spacing: 4) {
                 Text("💹").font(.system(size: 22))
-                Text(appState.monthlyIncome.yen)
+                Text(appState.lastMonthIncome.yen)
                     .font(.system(size: 19, weight: .bold))
                     .foregroundColor(Color(red: 0.2, green: 0.6, blue: 0.3))
                     .minimumScaleFactor(0.7).lineLimit(1)
                 Text("先月の収入")
                     .font(.system(size: 10))
                     .foregroundColor(AppColor.textSecondary)
-                let diff = appState.incomeComparedToLastMonth
+                let diff = appState.incomeComparedToPreviousMonth
                 Text("先々月比\(diff > 0 ? "+" : "")\(diff.yen)")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(diff > 0 ? AppColor.danger : diff < 0 ? AppColor.secondary : AppColor.textSecondary)

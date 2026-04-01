@@ -707,17 +707,39 @@ final class AppState: ObservableObject {
     // MARK: - 今月の収入
     var currentMonthlyIncome: Int { monthlyIncome }
 
+    // MARK: - 先月の収入（incomeHistoryから取得）
+    var lastMonthIncome: Int {
+        let cal = Calendar.current
+        let now = Date()
+        let lastMonth = cal.date(byAdding: .month, value: -1, to: now)!
+        let y = cal.component(.year, from: lastMonth)
+        let m = cal.component(.month, from: lastMonth)
+        return incomeHistory.first { $0.year == y && $0.month == m }?.amount
+            ?? monthlyIncome
+    }
+
+    // MARK: - 先々月比（収入）
+    var incomeComparedToPreviousMonth: Int {
+        let cal = Calendar.current
+        let now = Date()
+        let lastMonth     = cal.date(byAdding: .month, value: -1, to: now)!
+        let prevMonth     = cal.date(byAdding: .month, value: -2, to: now)!
+        let ly = cal.component(.year, from: lastMonth); let lm = cal.component(.month, from: lastMonth)
+        let py = cal.component(.year, from: prevMonth); let pm = cal.component(.month, from: prevMonth)
+        let last = incomeHistory.first { $0.year == ly && $0.month == lm }?.amount
+        let prev = incomeHistory.first { $0.year == py && $0.month == pm }?.amount
+        guard let l = last, let p = prev else { return 0 }
+        return l - p
+    }
+
     // MARK: - 先月比（支出）
     var expensesComparedToLastMonth: Int {
         // シンプルな推定: 固定費±3%のランダム変動として 3500 円差を返す
         monthlyReport.previousMonthComparison
     }
 
-    // MARK: - 先月比（収入）
-    var incomeComparedToLastMonth: Int {
-        // 手取りは通常同額とするが、0 を返して表示しない
-        0
-    }
+    // MARK: - 先月比（収入）※後方互換
+    var incomeComparedToLastMonth: Int { incomeComparedToPreviousMonth }
 
     // MARK: - 今月増やせたお金（週次節約額 × 4週）
     var monthlyGrownAmount: Int { weeklyProtectedAmount * 4 }
