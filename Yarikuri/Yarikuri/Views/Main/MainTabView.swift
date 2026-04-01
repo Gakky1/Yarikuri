@@ -379,47 +379,47 @@ struct ProtectSummaryCard: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            VStack(spacing: 2) {
-                Text("💰").font(.system(size: 18))
+            VStack(spacing: 6) {
+                Text("💰").font(.system(size: 24))
                 Text(appState.monthlyTotalExpenses.yen)
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.system(size: 20, weight: .bold))
                     .foregroundColor(AppColor.primary)
                     .minimumScaleFactor(0.7).lineLimit(1)
                 Text("今月の支出")
-                    .font(.system(size: 9))
+                    .font(.system(size: 12))
                     .foregroundColor(AppColor.textSecondary)
             }
             .frame(maxWidth: .infinity)
 
-            Divider().frame(height: 32)
+            Divider().frame(height: 48)
 
-            VStack(spacing: 2) {
-                Text("📚").font(.system(size: 18))
+            VStack(spacing: 6) {
+                Text("📚").font(.system(size: 24))
                 Text("\(appState.monthlyProtectActions.count)件")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.system(size: 20, weight: .bold))
                     .foregroundColor(AppColor.secondary)
                 Text("今月確認したこと")
-                    .font(.system(size: 9))
+                    .font(.system(size: 12))
                     .foregroundColor(AppColor.textSecondary)
             }
             .frame(maxWidth: .infinity)
 
-            Divider().frame(height: 32)
+            Divider().frame(height: 48)
 
             Button(action: { showDetail = true }) {
-                VStack(spacing: 2) {
+                VStack(spacing: 6) {
                     Image(systemName: "chevron.right.circle.fill")
-                        .font(.system(size: 22))
+                        .font(.system(size: 26))
                         .foregroundColor(AppColor.primary.opacity(0.7))
                     Text("詳細")
-                        .font(.system(size: 9))
+                        .font(.system(size: 12))
                         .foregroundColor(AppColor.textSecondary)
                 }
             }
             .buttonStyle(.plain)
-            .frame(width: 56)
+            .frame(width: 64)
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, 16)
         .padding(.horizontal, 8)
         .background(
             LinearGradient(
