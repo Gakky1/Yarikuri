@@ -107,7 +107,7 @@ struct ProtectScreenView: View {
                 VStack(spacing: 16) {
                     HStack {
                         Text("支出を減らす")
-                            .font(.system(size: 32, weight: .bold))
+                            .font(.system(size: 26, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
                         Spacer()
                         Button(action: { showReport = true }) {
@@ -258,7 +258,7 @@ struct GrowScreenView: View {
                 VStack(spacing: 16) {
                     HStack {
                         Text("収入を増やす")
-                            .font(.system(size: 32, weight: .bold))
+                            .font(.system(size: 26, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
                         Spacer()
                         Button(action: { showReport = true }) {
