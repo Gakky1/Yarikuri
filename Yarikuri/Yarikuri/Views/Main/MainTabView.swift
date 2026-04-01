@@ -139,7 +139,7 @@ struct ProtectScreenView: View {
                         )
                         ProtectNavCard(
                             emoji: "🤝",
-                            title: "使える制度・\n給付・支援",
+                            title: "使える制度・給付・支援",
                             subtitle: "補助金・公的支援を確認",
                             color: Color(red: 0.18, green: 0.62, blue: 0.35),
                             action: { showSupport = true }
