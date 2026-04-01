@@ -56,6 +56,13 @@ final class AppState: ObservableObject {
             }
         }
     }
+    @Published var fixedExpenseHistory: [FixedExpenseMonthRecord] = [] {
+        didSet {
+            if let data = try? JSONEncoder().encode(fixedExpenseHistory) {
+                UserDefaults.standard.set(data, forKey: "fixedExpenseHistory")
+            }
+        }
+    }
 
     // MARK: - UI状態
     @Published var selectedTab: Int = 0
@@ -129,6 +136,10 @@ final class AppState: ObservableObject {
            let records = try? JSONDecoder().decode([IncomeRecord].self, from: data) {
             incomeHistory = records
         }
+        if let data = UserDefaults.standard.data(forKey: "fixedExpenseHistory"),
+           let records = try? JSONDecoder().decode([FixedExpenseMonthRecord].self, from: data) {
+            fixedExpenseHistory = records
+        }
         resetDailyTasksIfNeeded()
     }
 
@@ -174,6 +185,26 @@ final class AppState: ObservableObject {
         UserDefaults.standard.set(20, forKey: "consecutiveLoginDays")
         completedTaskIds = Set((0..<25).map { "demo-task-\($0)" })
         dataStore.saveCompletedTaskIds(Array(completedTaskIds))
+
+        // デモ用：過去13ヶ月の固定費履歴
+        fixedExpenseHistory = [
+            FixedExpenseMonthRecord(year: 2025, month:  3, totalAmount: 96_400),
+            FixedExpenseMonthRecord(year: 2025, month:  4, totalAmount: 95_800),
+            FixedExpenseMonthRecord(year: 2025, month:  5, totalAmount: 95_800),
+            FixedExpenseMonthRecord(year: 2025, month:  6, totalAmount: 94_200),
+            FixedExpenseMonthRecord(year: 2025, month:  7, totalAmount: 94_200),
+            FixedExpenseMonthRecord(year: 2025, month:  8, totalAmount: 93_500),
+            FixedExpenseMonthRecord(year: 2025, month:  9, totalAmount: 93_500),
+            FixedExpenseMonthRecord(year: 2025, month: 10, totalAmount: 92_900),
+            FixedExpenseMonthRecord(year: 2025, month: 11, totalAmount: 92_900),
+            FixedExpenseMonthRecord(year: 2025, month: 12, totalAmount: 92_190),
+            FixedExpenseMonthRecord(year: 2026, month:  1, totalAmount: 92_190),
+            FixedExpenseMonthRecord(year: 2026, month:  2, totalAmount: 92_190),
+            FixedExpenseMonthRecord(year: 2026, month:  3, totalAmount: 92_190),
+        ]
+        if let data = try? JSONEncoder().encode(fixedExpenseHistory) {
+            UserDefaults.standard.set(data, forKey: "fixedExpenseHistory")
+        }
 
         // デモ用：過去13ヶ月の収入履歴
         incomeHistory = [

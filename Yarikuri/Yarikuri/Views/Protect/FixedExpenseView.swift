@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 
 // MARK: - 固定費・サブスク整理画面
 struct FixedExpenseView: View {
@@ -20,6 +21,9 @@ struct FixedExpenseView: View {
 
                 ScrollView {
                     VStack(spacing: 16) {
+                        // 固定費推移グラフ
+                        fixedExpenseChartCard
+
                         // 合計サマリー
                         totalSummaryCard
 
@@ -67,6 +71,90 @@ struct FixedExpenseView: View {
                 ReviewLinksSheet(expense: expense)
             }
         }
+    }
+
+    // MARK: - 固定費推移グラフカード
+    private var chartData: [FixedExpenseMonthRecord] {
+        Array(appState.fixedExpenseHistory.sorted {
+            if $0.year != $1.year { return $0.year < $1.year }
+            return $0.month < $1.month
+        }.suffix(12))
+    }
+
+    private var thisYear: Int { Calendar.current.component(.year, from: Date()) }
+
+    private var totalThisYear: Int {
+        appState.fixedExpenseHistory
+            .filter { $0.year == thisYear }
+            .reduce(0) { $0 + $1.totalAmount }
+    }
+
+    private var fixedExpenseChartCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("固定費の推移")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(AppColor.textPrimary)
+                Spacer()
+                if totalThisYear > 0 {
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text("\(thisYear)年 合計")
+                            .font(.system(size: 10))
+                            .foregroundColor(AppColor.textTertiary)
+                        Text(totalThisYear.yen)
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(AppColor.primary)
+                    }
+                }
+            }
+
+            if chartData.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "chart.bar")
+                        .font(.system(size: 36))
+                        .foregroundColor(AppColor.textTertiary.opacity(0.5))
+                    Text("履歴データがまだありません")
+                        .font(.system(size: 13))
+                        .foregroundColor(AppColor.textTertiary)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 140)
+            } else {
+                Chart(chartData) { record in
+                    BarMark(
+                        x: .value("月", record.displayLabel),
+                        y: .value("固定費", record.totalAmount)
+                    )
+                    .foregroundStyle(AppColor.primary.gradient)
+                    .cornerRadius(4)
+                }
+                .frame(height: 180)
+                .chartYAxis {
+                    AxisMarks(position: .leading) { value in
+                        AxisGridLine()
+                        AxisValueLabel {
+                            if let v = value.as(Int.self) {
+                                Text("¥\(v / 10000)万")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(AppColor.textTertiary)
+                            }
+                        }
+                    }
+                }
+                .chartXAxis {
+                    AxisMarks { value in
+                        AxisValueLabel {
+                            if let s = value.as(String.self) {
+                                Text(s)
+                                    .font(.system(size: 9))
+                                    .foregroundColor(AppColor.textTertiary)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .cardStyle()
     }
 
     private var reviewCandidates: [FixedExpense] {
