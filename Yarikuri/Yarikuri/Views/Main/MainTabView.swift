@@ -188,8 +188,8 @@ private struct ProtectNavCard: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                 Text(subtitle)
-                    .font(.system(size: 11))
-                    .foregroundColor(AppColor.textSecondary)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(color)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
             }
@@ -346,8 +346,8 @@ private struct GrowNavCard: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                 Text(subtitle)
-                    .font(.system(size: 11))
-                    .foregroundColor(AppColor.textSecondary)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(color)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
             }
