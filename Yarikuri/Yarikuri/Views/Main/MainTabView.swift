@@ -352,15 +352,15 @@ struct GrowScreenView: View {
                     GrowAnimationView()
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                        GrowNavCard(emoji: "💴", title: "収入の記録\nと推移",
+                        GrowNavCard(emoji: "💴", title: "収入の記録と推移",
                                     subtitle: incomeSubtitle,
                                     color: Color.green.opacity(0.8),
                                     action: { showIncome = true })
-                        GrowNavCard(emoji: "🎥", title: "副業で\n稼ぐ",
+                        GrowNavCard(emoji: "🎥", title: "副業で稼ぐ",
                                     subtitle: "YouTube・クラウド等9種",
                                     color: Color.red.opacity(0.75),
                                     action: { showFukugyou = true })
-                        GrowNavCard(emoji: "🏢", title: "キャリア・\n転職",
+                        GrowNavCard(emoji: "🏢", title: "キャリア・転職",
                                     subtitle: "転職・資格・独立",
                                     color: Color.indigo.opacity(0.8),
                                     action: { showCareer = true })
@@ -426,10 +426,11 @@ private struct GrowNavCard: View {
                 Text(emoji)
                     .font(.system(size: 32))
                 Text(title)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.system(size: 13, weight: .bold))
                     .foregroundColor(AppColor.textPrimary)
                     .multilineTextAlignment(.center)
-                    .lineLimit(2)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 Text(subtitle)
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(color)
