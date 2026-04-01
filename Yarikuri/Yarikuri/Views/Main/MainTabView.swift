@@ -72,14 +72,6 @@ struct CommunityScreenView: View {
             AppColor.background.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
-                    HStack {
-                        Text("みんなの行動")
-                            .font(.system(size: 26, weight: .bold))
-                            .foregroundColor(AppColor.textPrimary)
-                        Spacer()
-                    }
-                    .padding(.top, 8)
-
                     CommunityFeedSection()
 
                     Spacer().frame(height: 20)
