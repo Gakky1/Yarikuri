@@ -117,14 +117,14 @@ struct ProtectScreenView: View {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         ProtectNavCard(
                             emoji: "📋",
-                            title: "固定費・\nサブスク整理",
+                            title: "固定費",
                             subtitle: "\(appState.fixedExpenses.count)件 / \(appState.totalFixedExpenses.yen)",
                             color: AppColor.primary,
                             action: { showFixedExpense = true }
                         )
                         ProtectNavCard(
                             emoji: "💳",
-                            title: "借金返済\nナビ",
+                            title: "借金返済ナビ",
                             subtitle: appState.debts.isEmpty ? "借入なし" : "\(appState.debts.count)件の借入",
                             color: AppColor.danger,
                             action: { showDebtNavi = true }
