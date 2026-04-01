@@ -525,23 +525,19 @@ struct GrowSummaryCard: View {
     @EnvironmentObject var appState: AppState
     @State private var showDetail = false
 
-    private var grownValueText: String {
-        appState.monthlyGrownAmount > 0 ? "+\(appState.monthlyGrownAmount.yen)" : "+¥0"
-    }
-
     var body: some View {
         HStack(spacing: 0) {
             VStack(spacing: 4) {
                 Text("💹").font(.system(size: 22))
-                Text(grownValueText)
+                Text(appState.monthlyIncome.yen)
                     .font(.system(size: 19, weight: .bold))
                     .foregroundColor(Color(red: 0.2, green: 0.6, blue: 0.3))
                     .minimumScaleFactor(0.7).lineLimit(1)
-                Text("今月増やせたお金")
+                Text("先月の収入")
                     .font(.system(size: 10))
                     .foregroundColor(AppColor.textSecondary)
                 let diff = appState.incomeComparedToLastMonth
-                Text("先月比\(diff > 0 ? "+" : "")\(diff.yen)")
+                Text("先々月比\(diff > 0 ? "+" : "")\(diff.yen)")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(diff > 0 ? AppColor.secondary : diff < 0 ? AppColor.danger : AppColor.textSecondary)
             }
@@ -588,8 +584,8 @@ struct GrowSummaryCard: View {
         .sheet(isPresented: $showDetail) {
             MonthlyActionsDetailSheet(
                 title: "今月の増やし実績",
-                amountLabel: "今月増やせたお金",
-                amountValue: grownValueText,
+                amountLabel: "先月の収入",
+                amountValue: appState.monthlyIncome.yen,
                 actions: appState.monthlyGrowActions
             )
         }
