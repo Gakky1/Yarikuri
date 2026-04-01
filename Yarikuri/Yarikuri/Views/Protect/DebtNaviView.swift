@@ -595,6 +595,10 @@ struct DebtRepaymentChartView: View {
         return "\(y)年\(m)ヶ月"
     }
 
+    // MARK: タップ選択状態
+    @State private var selectedMonth: Int? = nil
+    @State private var selectedBalance: Double? = nil
+
     // MARK: Body
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -618,6 +622,42 @@ struct DebtRepaymentChartView: View {
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(AppColor.primary)
                 }
+            }
+
+            // ── タップ時の情報表示
+            if let month = selectedMonth, let balance = selectedBalance {
+                HStack(spacing: 12) {
+                    VStack(spacing: 2) {
+                        Text("残高")
+                            .font(.system(size: 10))
+                            .foregroundColor(AppColor.textTertiary)
+                        Text(Int(balance).yen)
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(AppColor.danger)
+                    }
+                    Rectangle()
+                        .fill(AppColor.sectionBackground)
+                        .frame(width: 1, height: 32)
+                    VStack(spacing: 2) {
+                        Text("完済まで")
+                            .font(.system(size: 10))
+                            .foregroundColor(AppColor.textTertiary)
+                        Text(month == 0 ? "今" : formatMonths(month))
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(AppColor.primary)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(AppColor.sectionBackground.opacity(0.8))
+                .cornerRadius(10)
+                .frame(maxWidth: .infinity)
+                .transition(.opacity)
+            } else {
+                Text("グラフをタップ・ドラッグすると残高を確認できます")
+                    .font(.system(size: 11))
+                    .foregroundColor(AppColor.textTertiary)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
 
             // ── メインチャート
@@ -645,6 +685,18 @@ struct DebtRepaymentChartView: View {
                     .interpolationMethod(.catmullRom)
                 }
 
+                // 選択中の縦線＋ドット
+                if let month = selectedMonth, let balance = selectedBalance {
+                    RuleMark(x: .value("月", month))
+                        .foregroundStyle(AppColor.primary.opacity(0.5))
+                        .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
+                    PointMark(
+                        x: .value("月", month),
+                        y: .value("残高", balance / 10000.0)
+                    )
+                    .foregroundStyle(AppColor.primary)
+                    .symbolSize(60)
+                }
             }
             .chartXScale(domain: 0...maxFutureMonths)
             .chartYScale(domain: 0...(maxBalance / 10000.0 * 1.08))
@@ -676,6 +728,40 @@ struct DebtRepaymentChartView: View {
                 }
             }
             .frame(height: 190)
+            .chartOverlay { proxy in
+                GeometryReader { geo in
+                    Rectangle()
+                        .fill(.clear)
+                        .contentShape(Rectangle())
+                        .gesture(
+                            DragGesture(minimumDistance: 0)
+                                .onChanged { value in
+                                    let plotOriginX = geo[proxy.plotAreaFrame].origin.x
+                                    let xPos = value.location.x - plotOriginX
+                                    guard xPos >= 0, xPos <= geo[proxy.plotAreaFrame].width else {
+                                        selectedMonth = nil; selectedBalance = nil; return
+                                    }
+                                    if let rawMonth: Int = proxy.value(atX: xPos) {
+                                        let clamped = max(0, min(rawMonth, maxFutureMonths))
+                                        if let nearest = allPoints.min(by: {
+                                            abs($0.month - clamped) < abs($1.month - clamped)
+                                        }) {
+                                            withAnimation(.easeInOut(duration: 0.1)) {
+                                                selectedMonth = nearest.month
+                                                selectedBalance = nearest.balance
+                                            }
+                                        }
+                                    }
+                                }
+                                .onEnded { _ in
+                                    withAnimation(.easeOut(duration: 0.3)) {
+                                        selectedMonth = nil
+                                        selectedBalance = nil
+                                    }
+                                }
+                        )
+                }
+            }
 
             // ── フッター統計
             footerStatsRow
