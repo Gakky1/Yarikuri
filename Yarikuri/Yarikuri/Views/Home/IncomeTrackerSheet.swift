@@ -42,13 +42,19 @@ struct IncomeTrackerSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // ── 入力フォーム ──────────────────
-                    inputSection
+                    // ── グラフ（常に表示） ──────────────
+                    chartSection
 
                     // ── サマリーカード ──────────────────
                     if !appState.incomeHistory.isEmpty {
                         summarySection
-                        chartSection
+                    }
+
+                    // ── 入力フォーム ──────────────────
+                    inputSection
+
+                    // ── 履歴 ──────────────────────────
+                    if !appState.incomeHistory.isEmpty {
                         historySection
                     }
                 }
@@ -56,7 +62,7 @@ struct IncomeTrackerSheet: View {
                 .padding(.vertical, 12)
             }
             .background(AppColor.background)
-            .navigationTitle("収入を記録")
+            .navigationTitle("収入の記録・推移")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -191,38 +197,52 @@ struct IncomeTrackerSheet: View {
     // MARK: - グラフ
     private var chartSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("過去12ヶ月の収入推移")
+            Text("収入の推移")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(AppColor.textPrimary)
 
-            Chart(chartData) { record in
-                BarMark(
-                    x: .value("月", "\(record.year % 100)/\(record.month)"),
-                    y: .value("収入", record.amount)
-                )
-                .foregroundStyle(AppColor.primary.gradient)
-                .cornerRadius(4)
-            }
-            .frame(height: 180)
-            .chartYAxis {
-                AxisMarks(position: .leading) { value in
-                    AxisGridLine()
-                    AxisValueLabel {
-                        if let v = value.as(Int.self) {
-                            Text("¥\(v / 10000)万")
-                                .font(.system(size: 10))
-                                .foregroundColor(AppColor.textTertiary)
+            if chartData.isEmpty {
+                // データなし時のプレースホルダー
+                VStack(spacing: 8) {
+                    Image(systemName: "chart.bar")
+                        .font(.system(size: 36))
+                        .foregroundColor(AppColor.textTertiary.opacity(0.5))
+                    Text("収入を記録するとグラフが表示されます")
+                        .font(.system(size: 13))
+                        .foregroundColor(AppColor.textTertiary)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 140)
+            } else {
+                Chart(chartData) { record in
+                    BarMark(
+                        x: .value("月", "\(record.year % 100)/\(record.month)"),
+                        y: .value("収入", record.amount)
+                    )
+                    .foregroundStyle(AppColor.primary.gradient)
+                    .cornerRadius(4)
+                }
+                .frame(height: 180)
+                .chartYAxis {
+                    AxisMarks(position: .leading) { value in
+                        AxisGridLine()
+                        AxisValueLabel {
+                            if let v = value.as(Int.self) {
+                                Text("¥\(v / 10000)万")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(AppColor.textTertiary)
+                            }
                         }
                     }
                 }
-            }
-            .chartXAxis {
-                AxisMarks { value in
-                    AxisValueLabel {
-                        if let s = value.as(String.self) {
-                            Text(s)
-                                .font(.system(size: 9))
-                                .foregroundColor(AppColor.textTertiary)
+                .chartXAxis {
+                    AxisMarks { value in
+                        AxisValueLabel {
+                            if let s = value.as(String.self) {
+                                Text(s)
+                                    .font(.system(size: 9))
+                                    .foregroundColor(AppColor.textTertiary)
+                            }
                         }
                     }
                 }
