@@ -540,7 +540,7 @@ struct GrowSummaryCard: View {
                 let diff = appState.incomeComparedToPreviousMonth
                 Text("先々月比\(diff > 0 ? "+" : "")\(diff.yen)")
                     .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(diff > 0 ? AppColor.danger : diff < 0 ? AppColor.secondary : AppColor.textSecondary)
+                    .foregroundColor(diff > 0 ? AppColor.tertiary : diff < 0 ? AppColor.danger : AppColor.textSecondary)
             }
             .frame(maxWidth: .infinity)
 
