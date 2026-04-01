@@ -125,6 +125,8 @@ struct CommunityPostCard: View {
     @EnvironmentObject var appState: AppState
     let post: CommunityPost
     var compact: Bool = false
+    /// 親がコメントシートを管理する場合にセットする。nilなら内部シートを使う
+    var onCommentTap: (() -> Void)? = nil
     @State private var showComments = false
 
     var body: some View {
@@ -285,7 +287,13 @@ struct CommunityPostCard: View {
 
     // MARK: コメントボタン
     private var commentButton: some View {
-        Button(action: { showComments = true }) {
+        Button(action: {
+            if let onCommentTap {
+                onCommentTap()
+            } else {
+                showComments = true
+            }
+        }) {
             HStack(spacing: 4) {
                 Image(systemName: "bubble.left")
                     .font(.system(size: 13))

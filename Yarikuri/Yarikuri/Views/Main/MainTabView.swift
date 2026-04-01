@@ -67,7 +67,7 @@ struct MainTabView: View {
 struct CommunityScreenView: View {
     @EnvironmentObject var appState: AppState
     @State private var selectedTab: FeedTab = .recommend
-    @State private var showComposer = false
+    @State private var activeSheet: CommunityActiveSheet? = nil
 
     private var posts: [CommunityPost] {
         switch selectedTab {
@@ -87,7 +87,7 @@ struct CommunityScreenView: View {
                             .font(.system(size: 26, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
                         Spacer()
-                        Button(action: { showComposer = true }) {
+                        Button(action: { activeSheet = .compose }) {
                             Image(systemName: "square.and.pencil")
                                 .font(.system(size: 20))
                                 .foregroundColor(AppColor.primary)
@@ -101,7 +101,8 @@ struct CommunityScreenView: View {
                         emptyView
                     } else {
                         ForEach(posts) { post in
-                            CommunityPostCard(post: post)
+                            CommunityPostCard(post: post,
+                                             onCommentTap: { activeSheet = .comment(post) })
                         }
                     }
 
@@ -111,8 +112,16 @@ struct CommunityScreenView: View {
                 .padding(.top, 12)
             }
         }
-        .sheet(isPresented: $showComposer) {
-            PostComposerSheet()
+        // シートを1つに統合してSwiftUIの多重sheet競合を回避
+        .sheet(item: $activeSheet) { sheet in
+            switch sheet {
+            case .comment(let post):
+                CommentSheet(post: post)
+                    .environmentObject(appState)
+            case .compose:
+                PostComposerSheet()
+                    .environmentObject(appState)
+            }
         }
     }
 
@@ -134,6 +143,19 @@ struct CommunityScreenView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
+    }
+}
+
+// シート種別（1つのsheet(item:)で管理するため）
+private enum CommunityActiveSheet: Identifiable {
+    case comment(CommunityPost)
+    case compose
+
+    var id: String {
+        switch self {
+        case .comment(let p): return "comment-\(p.id)"
+        case .compose: return "compose"
+        }
     }
 }
 
