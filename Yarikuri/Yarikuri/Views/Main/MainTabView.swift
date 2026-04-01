@@ -388,6 +388,10 @@ struct ProtectSummaryCard: View {
                 Text("今月の支出")
                     .font(.system(size: 12))
                     .foregroundColor(AppColor.textSecondary)
+                let diff = appState.expensesComparedToLastMonth
+                Text("先月比\(diff > 0 ? "+" : "")\(diff.yen)")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(diff > 0 ? AppColor.danger : diff < 0 ? AppColor.secondary : AppColor.textSecondary)
             }
             .frame(maxWidth: .infinity)
 
