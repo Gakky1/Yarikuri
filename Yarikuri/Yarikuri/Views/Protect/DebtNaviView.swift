@@ -763,54 +763,11 @@ struct DebtRepaymentChartView: View {
                 }
             }
 
-            // ── フッター統計
-            footerStatsRow
         }
         .padding(16)
         .background(AppColor.cardBackground)
         .cornerRadius(16)
         .shadow(color: AppColor.shadowColor, radius: 8, x: 0, y: 2)
-    }
-
-    // MARK: フッター統計
-    @ViewBuilder
-    private var footerStatsRow: some View {
-        HStack(spacing: 0) {
-            // 支払い利息
-            if totalInterestEstimate > 0 {
-                VStack(spacing: 3) {
-                    Text("⚠️ 支払い利息の目安")
-                        .font(.system(size: 10))
-                        .foregroundColor(AppColor.textTertiary)
-                    Text("約\(totalInterestEstimate.yen)")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(AppColor.caution)
-                        .minimumScaleFactor(0.8)
-                        .lineLimit(1)
-                }
-                .frame(maxWidth: .infinity)
-
-                Rectangle()
-                    .fill(AppColor.sectionBackground)
-                    .frame(width: 1, height: 36)
-            }
-
-            // 完済後の余裕
-            VStack(spacing: 3) {
-                Text("🎯 完済後に増える余裕")
-                    .font(.system(size: 10))
-                    .foregroundColor(AppColor.textTertiary)
-                Text("月+\(monthlyFreeAfterPayoff.yen)")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(AppColor.safe)
-                    .minimumScaleFactor(0.8)
-                    .lineLimit(1)
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .padding(.vertical, 10)
-        .background(AppColor.sectionBackground.opacity(0.6))
-        .cornerRadius(10)
     }
 }
 
