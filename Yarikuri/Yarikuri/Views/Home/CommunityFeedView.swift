@@ -9,22 +9,6 @@ struct CommunityFeedSection: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            // ヘッダー
-            HStack {
-                HStack(spacing: 6) {
-                    Text("👥").font(.system(size: 18))
-                    Text("みんなの行動")
-                        .font(.system(size: 17, weight: .bold))
-                        .foregroundColor(AppColor.textPrimary)
-                }
-                Spacer()
-                Button(action: { showAllPosts = true }) {
-                    Text("もっと見る")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(AppColor.primary)
-                }
-            }
-
             // タブ切り替え
             FeedTabBar(selected: $selectedTab)
 
