@@ -66,6 +66,16 @@ struct MainTabView: View {
 // MARK: - みんなの行動画面
 struct CommunityScreenView: View {
     @EnvironmentObject var appState: AppState
+    @State private var selectedTab: FeedTab = .recommend
+    @State private var showComposer = false
+
+    private var posts: [CommunityPost] {
+        switch selectedTab {
+        case .recommend: return appState.recommendedPosts
+        case .following: return appState.followingPosts
+        case .mine:      return appState.myPosts
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -77,10 +87,23 @@ struct CommunityScreenView: View {
                             .font(.system(size: 26, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
                         Spacer()
+                        Button(action: { showComposer = true }) {
+                            Image(systemName: "square.and.pencil")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppColor.primary)
+                        }
                     }
                     .padding(.top, 8)
 
-                    CommunityFeedSection()
+                    FeedTabBar(selected: $selectedTab)
+
+                    if posts.isEmpty {
+                        emptyView
+                    } else {
+                        ForEach(posts) { post in
+                            CommunityPostCard(post: post)
+                        }
+                    }
 
                     Spacer().frame(height: 20)
                 }
@@ -88,6 +111,29 @@ struct CommunityScreenView: View {
                 .padding(.top, 12)
             }
         }
+        .sheet(isPresented: $showComposer) {
+            PostComposerSheet()
+        }
+    }
+
+    private var emptyView: some View {
+        VStack(spacing: 12) {
+            Text(selectedTab == .following ? "👤" : "📭")
+                .font(.system(size: 40))
+            Text(selectedTab == .following
+                 ? "まだフォロー中のユーザーがいません"
+                 : "投稿がありません")
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(AppColor.textSecondary)
+            if selectedTab == .following {
+                Text("おすすめタブから気になる人を\nフォローしてみましょう")
+                    .font(.system(size: 13))
+                    .foregroundColor(AppColor.textTertiary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
     }
 }
 
