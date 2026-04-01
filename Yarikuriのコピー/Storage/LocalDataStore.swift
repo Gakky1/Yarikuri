@@ -17,6 +17,7 @@ final class LocalDataStore {
         static let debts = "yarikuri.debts"
         static let scheduledPayments = "yarikuri.scheduledPayments"
         static let completedTaskIds = "yarikuri.completedTaskIds"
+        static let cardActions = "yarikuri.cardActions"
     }
 
     // MARK: - ユーザープロフィール
@@ -81,6 +82,19 @@ final class LocalDataStore {
         defaults.stringArray(forKey: Key.completedTaskIds) ?? []
     }
 
+    // MARK: - カードアクション履歴
+
+    func saveCardActions(_ actions: [CardAction]) {
+        if let data = try? JSONEncoder().encode(actions) {
+            defaults.set(data, forKey: Key.cardActions)
+        }
+    }
+
+    func loadCardActions() -> [CardAction] {
+        guard let data = defaults.data(forKey: Key.cardActions) else { return [] }
+        return (try? JSONDecoder().decode([CardAction].self, from: data)) ?? []
+    }
+
     // MARK: - 全データ削除（デバッグ用）
 
     func clearAll() {
@@ -89,5 +103,6 @@ final class LocalDataStore {
         defaults.removeObject(forKey: Key.debts)
         defaults.removeObject(forKey: Key.scheduledPayments)
         defaults.removeObject(forKey: Key.completedTaskIds)
+        defaults.removeObject(forKey: Key.cardActions)
     }
 }

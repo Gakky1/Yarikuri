@@ -5,6 +5,7 @@ struct DebtNaviView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.dismiss) var dismiss
     @State private var showAddDebt = false
+    @State private var showReport  = false
     @State private var newName = ""
     @State private var newBalance = ""
     @State private var newMonthly = ""
@@ -56,14 +57,21 @@ struct DebtNaviView: View {
                         .foregroundColor(AppColor.primary)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showAddDebt = true }) {
-                        Image(systemName: "plus")
-                            .foregroundColor(AppColor.primary)
+                    HStack(spacing: 14) {
+                        Button(action: { showReport = true }) {
+                            Image(systemName: "chart.bar.fill")
+                                .foregroundColor(AppColor.primary)
+                        }
+                        Button(action: { showAddDebt = true }) {
+                            Image(systemName: "plus")
+                                .foregroundColor(AppColor.primary)
+                        }
                     }
                 }
             }
-            .sheet(isPresented: $showAddDebt) {
-                addDebtSheet
+            .sheet(isPresented: $showAddDebt) { addDebtSheet }
+            .sheet(isPresented: $showReport) {
+                MonthlyReportView().environmentObject(appState)
             }
         }
     }
@@ -112,32 +120,32 @@ struct DebtNaviView: View {
     // MARK: - 優先度説明
     private var priorityExplanation: some View {
         HStack(spacing: 8) {
-            Image(systemName: "info.circle.fill")
-                .foregroundColor(AppColor.tertiary)
-                .font(.system(size: 14))
-            Text("金利が高いものを優先して返すと、利息の節約になります")
-                .font(.system(size: 13))
+            Text("💡").font(.system(size: 14))
+            Text("金利の高い借金から返すと、利息が減ります")
+                .font(.system(size: 12))
                 .foregroundColor(AppColor.textSecondary)
         }
-        .padding(12)
+        .padding(10)
         .background(AppColor.tertiaryLight)
         .cornerRadius(10)
     }
 
     // MARK: - 完済目標カード
     private var payoffGoalCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("💭 返済が終わったら...")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(AppColor.textSecondary)
-
-            let monthlyTotal = appState.debts.reduce(0) { $0 + $1.monthlyPayment }
-            Text("毎月\(monthlyTotal.yen)が自由になります。\n返済が完了したら貯金に回しましょう。")
-                .font(.system(size: 14))
-                .foregroundColor(AppColor.textPrimary)
-                .lineSpacing(3)
+        let monthlyTotal = appState.debts.reduce(0) { $0 + $1.monthlyPayment }
+        return HStack(spacing: 12) {
+            Text("🎯").font(.system(size: 28))
+            VStack(alignment: .leading, spacing: 3) {
+                Text("完済したら毎月\(monthlyTotal.yen)が自由に！")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(AppColor.secondary)
+                Text("貯金や投資に回せます")
+                    .font(.system(size: 12))
+                    .foregroundColor(AppColor.textSecondary)
+            }
+            Spacer()
         }
-        .cardStyle()
+        .padding(14)
         .background(AppColor.secondaryLight)
         .cornerRadius(14)
     }
@@ -259,7 +267,7 @@ private struct DebtDetailCard: View {
                 divider
                 debtMetric(
                     label: "完済まで約",
-                    value: debt.estimatedMonthsToPayoff.map { "\($0)ヶ月" } ?? "不明"
+                    value: debt.estimatedMonthsToPayoff.map { formatMonths($0) } ?? "不明"
                 )
                 divider
                 debtMetric(label: "返済日", value: "毎月\(debt.paymentDay)日")
@@ -286,6 +294,14 @@ private struct DebtDetailCard: View {
         case .medium: return AppColor.caution
         case .low: return AppColor.secondary
         }
+    }
+
+    private func formatMonths(_ months: Int) -> String {
+        let years = months / 12
+        let rem   = months % 12
+        if years == 0 { return "\(rem)ヶ月" }
+        if rem   == 0 { return "\(years)年" }
+        return "\(years)年\(rem)ヶ月"
     }
 
     private func debtMetric(label: String, value: String) -> some View {

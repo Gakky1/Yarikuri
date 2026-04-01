@@ -41,12 +41,12 @@ struct ProtectView: View {
 
     private var headerCard: some View {
         HStack(spacing: 12) {
-            Text("🛡️").font(.system(size: 28))
+            Text("🛡️").font(.system(size: 32))
             VStack(alignment: .leading, spacing: 3) {
-                Text("毎月出ていくお金を整える")
+                Text("お金が出ていくのを減らそう！")
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(AppColor.textPrimary)
-                Text("固定費を見直し、借金をコントロールする")
+                Text("払いすぎていないかチェックしよう")
                     .font(.system(size: 13))
                     .foregroundColor(AppColor.textSecondary)
             }
@@ -62,10 +62,10 @@ struct ProtectView: View {
             VStack(spacing: 12) {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("固定費・サブスク整理")
+                        Text("💳 固定費・サブスク")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
-                        Text("毎月の固定支出を確認・見直す")
+                        Text("毎月かかるお金を確認しよう")
                             .font(.system(size: 13))
                             .foregroundColor(AppColor.textSecondary)
                     }
@@ -146,10 +146,10 @@ struct ProtectView: View {
             VStack(spacing: 12) {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("借金・リボ返済ナビ")
+                        Text("💸 借金・リボ返済ナビ")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
-                        Text("返済計画を立てて、少しずつ減らす")
+                        Text("借りたお金を少しずつ返そう")
                             .font(.system(size: 13))
                             .foregroundColor(AppColor.textSecondary)
                     }
@@ -175,7 +175,7 @@ struct ProtectView: View {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundColor(AppColor.danger)
                                 .font(.system(size: 12))
-                            Text("高金利の借金があります。優先返済をおすすめします。")
+                            Text("利息が高い借金があります！早めに返そう")
                                 .font(.system(size: 12))
                                 .foregroundColor(AppColor.danger)
                         }

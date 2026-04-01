@@ -82,13 +82,13 @@ struct SafetyDetailView: View {
             }
 
             VStack(spacing: 10) {
-                BreakdownRow(label: "今月の手取り", value: appState.monthlyIncome.yen, isIncome: true)
-                BreakdownRow(label: "固定費合計", value: "- \(appState.totalFixedExpenses.yen)", isDeduction: true)
-                BreakdownRow(label: "支払い予定合計", value: "- \(appState.totalScheduledPayments.yen)", isDeduction: true)
+                BreakdownRow(label: "💰 今月のお給料", value: appState.monthlyIncome.yen, isIncome: true)
+                BreakdownRow(label: "📋 毎月の固定費", value: "- \(appState.totalFixedExpenses.yen)", isDeduction: true)
+                BreakdownRow(label: "📅 今月の支払い", value: "- \(appState.totalScheduledPayments.yen)", isDeduction: true)
 
                 Divider()
 
-                BreakdownRow(label: "変動費として使える額", value: appState.remainingBudget.yen, isTotal: true)
+                BreakdownRow(label: "🐷 自由に使えるお金", value: appState.remainingBudget.yen, isTotal: true)
             }
         }
         .cardStyle()
@@ -118,7 +118,7 @@ struct SafetyDetailView: View {
                     .font(.system(size: 32))
             }
 
-            Text("固定費の見直しが効いています。この調子で続けましょう！")
+            Text("固定費を見直したおかげです。この調子でいきましょう！")
                 .font(.system(size: 13))
                 .foregroundColor(AppColor.textSecondary)
                 .padding(.top, 4)

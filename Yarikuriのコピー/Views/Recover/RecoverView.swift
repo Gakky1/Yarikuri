@@ -38,12 +38,12 @@ struct RecoverView: View {
 
     private var headerCard: some View {
         HStack(spacing: 12) {
-            Text("🌱").font(.system(size: 28))
+            Text("🌱").font(.system(size: 32))
             VStack(alignment: .leading, spacing: 3) {
-                Text("収入と支援を増やす")
+                Text("もらえるお金を見つけよう！")
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(AppColor.textPrimary)
-                Text("使える制度を確認し、副収入の種を探す")
+                Text("国や市からの支援とお小遣い稼ぎを探そう")
                     .font(.system(size: 13))
                     .foregroundColor(AppColor.textSecondary)
             }
@@ -59,10 +59,10 @@ struct RecoverView: View {
             VStack(spacing: 12) {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("使える制度・給付・支援")
+                        Text("🏛️ 使える制度・支援")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
-                        Text("あなたの状況に合った支援を確認する")
+                        Text("あなたがもらえる支援を見つけよう")
                             .font(.system(size: 13))
                             .foregroundColor(AppColor.textSecondary)
                     }
@@ -78,7 +78,7 @@ struct RecoverView: View {
                         SupportSystemMiniRow(system: system)
                     }
                     if systems.count > 3 {
-                        Text("他\(systems.count - 3)件の制度を確認する →")
+                        Text("👉 他\(systems.count - 3)件の支援もあります")
                             .font(.system(size: 13))
                             .foregroundColor(AppColor.primary)
                     }
@@ -95,10 +95,10 @@ struct RecoverView: View {
             VStack(spacing: 12) {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("副収入の候補")
+                        Text("💰 お小遣い稼ぎのアイデア")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
-                        Text("スキルや時間を活かして収入を増やす")
+                        Text("空き時間でお金を稼ごう")
                             .font(.system(size: 13))
                             .foregroundColor(AppColor.textSecondary)
                     }

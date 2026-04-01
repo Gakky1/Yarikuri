@@ -33,17 +33,10 @@ struct TodayTaskCard: View {
                             .font(.system(size: 22))
                     }
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(task.title)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(AppColor.textPrimary)
-                            .fixedSize(horizontal: false, vertical: true)
-                        Text(task.description)
-                            .font(.system(size: 13))
-                            .foregroundColor(AppColor.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .lineSpacing(2)
-                    }
+                    Text(task.title)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(AppColor.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     Spacer(minLength: 0)
                 }

@@ -91,6 +91,8 @@ struct OnboardingFlowView: View {
             DebtStepView(vm: vm)
         case .nextPayment:
             NextPaymentStepView(vm: vm)
+        case .quiz:
+            FinancialQuizStepView(vm: vm)
         case .concern:
             ConcernStepView(vm: vm, onComplete: completeOnboarding)
         }
@@ -111,7 +113,7 @@ struct OnboardingFlowView: View {
                 }
                 .disabled(!vm.canProceedFromStep)
 
-                if vm.currentStep == .fixedExpense || vm.currentStep == .debt || vm.currentStep == .nextPayment {
+                if vm.currentStep == .fixedExpense || vm.currentStep == .debt || vm.currentStep == .nextPayment || vm.currentStep == .quiz {
                     Button(action: { vm.nextStep() }) {
                         Text("あとで入力する")
                             .font(.system(size: 14))

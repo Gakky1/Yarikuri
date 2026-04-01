@@ -43,6 +43,9 @@ final class OnboardingViewModel: ObservableObject {
     @Published var newPaymentAmountText: String = ""
     @Published var newPaymentDate: Date = Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date()
 
+    // MARK: - 初回6問クイズ
+    @Published var quizAnswers = FinancialQuizAnswers()
+
     // MARK: - 困りごと診断
     @Published var selectedConcerns: Set<ConcernType> = []
 
@@ -74,6 +77,8 @@ final class OnboardingViewModel: ObservableObject {
             return true
         case .nextPayment:
             return true
+        case .quiz:
+            return true
         case .concern:
             return !selectedConcerns.isEmpty
         }
@@ -94,7 +99,8 @@ final class OnboardingViewModel: ObservableObject {
         case .income: currentStep = .fixedExpense
         case .fixedExpense: currentStep = .debt
         case .debt: currentStep = .nextPayment
-        case .nextPayment: currentStep = .concern
+        case .nextPayment: currentStep = .quiz
+        case .quiz: currentStep = .concern
         case .concern: break
         }
     }
@@ -107,7 +113,8 @@ final class OnboardingViewModel: ObservableObject {
         case .fixedExpense: currentStep = .income
         case .debt: currentStep = .fixedExpense
         case .nextPayment: currentStep = .debt
-        case .concern: currentStep = .nextPayment
+        case .quiz: currentStep = .nextPayment
+        case .concern: currentStep = .quiz
         }
     }
 
@@ -117,6 +124,7 @@ final class OnboardingViewModel: ObservableObject {
 
     var isFirstStep: Bool { currentStep == .welcome }
     var isLastStep: Bool { currentStep == .concern }
+    var isQuizStep: Bool { currentStep == .quiz }
 
     // MARK: - 固定費追加
     func addFixedExpense() {
@@ -198,7 +206,8 @@ final class OnboardingViewModel: ObservableObject {
             hasRent: hasRent,
             occupation: occupation,
             isOnboardingCompleted: false,
-            createdAt: Date()
+            createdAt: Date(),
+            quizAnswers: quizAnswers
         )
     }
 }
@@ -211,7 +220,8 @@ enum OnboardingStep: Int, CaseIterable {
     case fixedExpense = 3
     case debt = 4
     case nextPayment = 5
-    case concern = 6
+    case quiz = 6
+    case concern = 7
 
     var title: String {
         switch self {
@@ -221,6 +231,7 @@ enum OnboardingStep: Int, CaseIterable {
         case .fixedExpense: return "毎月の固定費を入力してください"
         case .debt: return "借金はありますか？"
         case .nextPayment: return "近いうちの大きな支払いは？"
+        case .quiz: return "あなたのことを教えてください"
         case .concern: return "お金の悩みを選んでください"
         }
     }
@@ -233,6 +244,7 @@ enum OnboardingStep: Int, CaseIterable {
         case .fixedExpense: return "家賃・保険・サブスクなど、毎月必ず出ていくお金です"
         case .debt: return "ローン・リボ・消費者金融など"
         case .nextPayment: return "あれば入力してください（後で追加もできます）"
+        case .quiz: return "ホーム画面をあなたに合わせてカスタマイズします"
         case .concern: return "複数選んでOKです"
         }
     }

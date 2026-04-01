@@ -14,10 +14,22 @@ struct UserProfile: Codable {
     var occupation: OccupationType?      // 職業区分（任意）
     var isOnboardingCompleted: Bool      // オンボーディング完了フラグ
     var createdAt: Date
+    var quizAnswers: FinancialQuizAnswers?  // 初回6問の回答
+    var nickname: String = ""             // ニックネーム（褒め機能用）
+    var dreamText: String = ""            // 夢・目標テキスト（例：ヨーロッパ旅行）
+    var dreamEmoji: String = "✨"         // 夢の絵文字
+    var prefecture: String = ""           // 都道府県（制度パーソナライズ用）
+    var municipality: String = ""         // 市区町村（制度パーソナライズ用）
 
     // 計算用：実際の手取り額
     var incomeAmount: Int {
         customIncomeAmount ?? incomeRange.midValue
+    }
+
+    // パーソナライズ用スコア（回答から計算）
+    var financialProfile: UserFinancialProfile? {
+        guard let answers = quizAnswers else { return nil }
+        return UserFinancialProfile.from(answers: answers)
     }
 }
 
