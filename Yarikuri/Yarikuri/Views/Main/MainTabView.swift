@@ -118,14 +118,14 @@ struct ProtectScreenView: View {
                         ProtectNavCard(
                             emoji: "📋",
                             title: "固定費",
-                            subtitle: "\(appState.fixedExpenses.count)件 / \(appState.totalFixedExpenses.yen)",
+                            subtitle: appState.fixedExpenses.isEmpty ? "未登録" : appState.totalFixedExpenses.yen,
                             color: AppColor.primary,
                             action: { showFixedExpense = true }
                         )
                         ProtectNavCard(
                             emoji: "💳",
                             title: "借金返済ナビ",
-                            subtitle: appState.debts.isEmpty ? "借入なし" : "\(appState.debts.count)件の借入",
+                            subtitle: appState.debts.isEmpty ? "借入なし" : "月返済額 \(appState.debts.reduce(0){ $0 + $1.monthlyPayment }.yen)",
                             color: AppColor.danger,
                             action: { showDebtNavi = true }
                         )
