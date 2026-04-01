@@ -80,7 +80,7 @@ struct CommunityScreenView: View {
     var body: some View {
         ZStack {
             AppColor.background.ignoresSafeArea()
-            ScrollView(showsIndicators: false) {
+            ScrollView(showsIndicators: true) {
                 VStack(spacing: 16) {
                     HStack {
                         Text("みんなの行動")
