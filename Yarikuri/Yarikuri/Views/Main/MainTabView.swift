@@ -387,51 +387,51 @@ struct ProtectSummaryCard: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            VStack(spacing: 6) {
-                Text("💰").font(.system(size: 24))
+            VStack(spacing: 4) {
+                Text("💰").font(.system(size: 20))
                 Text(appState.monthlyTotalExpenses.yen)
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundColor(AppColor.primary)
                     .minimumScaleFactor(0.7).lineLimit(1)
                 Text("今月の支出")
-                    .font(.system(size: 12))
+                    .font(.system(size: 10))
                     .foregroundColor(AppColor.textSecondary)
                 let diff = appState.expensesComparedToLastMonth
                 Text("先月比\(diff > 0 ? "+" : "")\(diff.yen)")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(diff > 0 ? AppColor.danger : diff < 0 ? AppColor.secondary : AppColor.textSecondary)
             }
             .frame(maxWidth: .infinity)
 
-            Divider().frame(height: 48)
+            Divider().frame(height: 40)
 
-            VStack(spacing: 6) {
-                Text("📚").font(.system(size: 24))
+            VStack(spacing: 4) {
+                Text("📚").font(.system(size: 20))
                 Text("\(appState.monthlyProtectActions.count)件")
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundColor(AppColor.secondary)
                 Text("今月確認したこと")
-                    .font(.system(size: 12))
+                    .font(.system(size: 10))
                     .foregroundColor(AppColor.textSecondary)
             }
             .frame(maxWidth: .infinity)
 
-            Divider().frame(height: 48)
+            Divider().frame(height: 40)
 
             Button(action: { showDetail = true }) {
-                VStack(spacing: 6) {
+                VStack(spacing: 4) {
                     Image(systemName: "chevron.right.circle.fill")
-                        .font(.system(size: 26))
+                        .font(.system(size: 22))
                         .foregroundColor(AppColor.primary.opacity(0.7))
                     Text("詳細")
-                        .font(.system(size: 12))
+                        .font(.system(size: 10))
                         .foregroundColor(AppColor.textSecondary)
                 }
             }
             .buttonStyle(.plain)
-            .frame(width: 64)
+            .frame(width: 56)
         }
-        .padding(.vertical, 16)
+        .padding(.vertical, 12)
         .padding(.horizontal, 8)
         .background(
             LinearGradient(
