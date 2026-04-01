@@ -194,12 +194,27 @@ struct IncomeTrackerSheet: View {
         .shadow(color: AppColor.shadowColor, radius: 3, x: 0, y: 1)
     }
 
+    private var thisYear: Int { Calendar.current.component(.year, from: Date()) }
+
     // MARK: - グラフ
     private var chartSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("収入の推移")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(AppColor.textPrimary)
+            HStack(alignment: .firstTextBaseline) {
+                Text("収入の推移")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(AppColor.textPrimary)
+                Spacer()
+                if totalThisYear > 0 {
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text("\(thisYear)年 合計")
+                            .font(.system(size: 10))
+                            .foregroundColor(AppColor.textTertiary)
+                        Text(totalThisYear.yen)
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(AppColor.primary)
+                    }
+                }
+            }
 
             if chartData.isEmpty {
                 // データなし時のプレースホルダー

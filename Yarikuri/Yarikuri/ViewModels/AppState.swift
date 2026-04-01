@@ -174,6 +174,26 @@ final class AppState: ObservableObject {
         UserDefaults.standard.set(20, forKey: "consecutiveLoginDays")
         completedTaskIds = Set((0..<25).map { "demo-task-\($0)" })
         dataStore.saveCompletedTaskIds(Array(completedTaskIds))
+
+        // デモ用：過去13ヶ月の収入履歴
+        incomeHistory = [
+            IncomeRecord(year: 2025, month:  3, amount: 218_000),
+            IncomeRecord(year: 2025, month:  4, amount: 221_000),
+            IncomeRecord(year: 2025, month:  5, amount: 219_500),
+            IncomeRecord(year: 2025, month:  6, amount: 224_000),
+            IncomeRecord(year: 2025, month:  7, amount: 220_000),
+            IncomeRecord(year: 2025, month:  8, amount: 217_000),
+            IncomeRecord(year: 2025, month:  9, amount: 222_500),
+            IncomeRecord(year: 2025, month: 10, amount: 220_000),
+            IncomeRecord(year: 2025, month: 11, amount: 226_000),
+            IncomeRecord(year: 2025, month: 12, amount: 231_000, note: "賞与あり"),
+            IncomeRecord(year: 2026, month:  1, amount: 220_000),
+            IncomeRecord(year: 2026, month:  2, amount: 219_000),
+            IncomeRecord(year: 2026, month:  3, amount: 222_000),
+        ]
+        if let data = try? JSONEncoder().encode(incomeHistory) {
+            UserDefaults.standard.set(data, forKey: "incomeHistory")
+        }
     }
 
     // MARK: - オンボーディング完了処理
