@@ -146,7 +146,7 @@ struct ProtectScreenView: View {
                         )
                         ProtectNavCard(
                             emoji: "🛡️",
-                            title: "守り方",
+                            title: "支出の減らし方",
                             subtitle: "節約・支出削減の知識",
                             color: AppColor.secondary,
                             action: { showHowTo = true }
