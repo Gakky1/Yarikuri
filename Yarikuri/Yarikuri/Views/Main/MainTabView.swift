@@ -89,6 +89,7 @@ struct ProtectScreenView: View {
     @State private var showReport        = false
     @State private var showFixedExpense  = false
     @State private var showDebtNavi      = false
+    @State private var showPayment       = false
     @State private var showSupport       = false
     @State private var showHowTo         = false
     @State private var showSecret        = false
@@ -130,6 +131,13 @@ struct ProtectScreenView: View {
                             action: { showDebtNavi = true }
                         )
                         ProtectNavCard(
+                            emoji: "📅",
+                            title: "今月の支払い",
+                            subtitle: appState.scheduledPaymentsThisMonth.isEmpty ? "支払いなし" : appState.totalScheduledPayments.yen,
+                            color: AppColor.caution,
+                            action: { showPayment = true }
+                        )
+                        ProtectNavCard(
                             emoji: "🤝",
                             title: "使える制度・\n給付・支援",
                             subtitle: "補助金・公的支援を確認",
@@ -163,6 +171,7 @@ struct ProtectScreenView: View {
         .sheet(isPresented: $showReport)       { MonthlyReportView() }
         .sheet(isPresented: $showFixedExpense) { FixedExpenseView() }
         .sheet(isPresented: $showDebtNavi)     { DebtNaviView() }
+        .sheet(isPresented: $showPayment)      { PaymentDetailView() }
         .sheet(isPresented: $showSupport)      { SupportSystemView() }
         .sheet(isPresented: $showHowTo)        { ProtectHowToSheet() }
         .sheet(isPresented: $showSecret)       { ProtectSecretSheet() }
