@@ -381,11 +381,11 @@ struct ProtectSummaryCard: View {
         HStack(spacing: 0) {
             VStack(spacing: 2) {
                 Text("💰").font(.system(size: 18))
-                Text(appState.monthlyProtectedAmount.yen)
+                Text(appState.monthlyTotalExpenses.yen)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(AppColor.primary)
                     .minimumScaleFactor(0.7).lineLimit(1)
-                Text("今月守れたお金")
+                Text("今月の支出")
                     .font(.system(size: 9))
                     .foregroundColor(AppColor.textSecondary)
             }
@@ -431,9 +431,9 @@ struct ProtectSummaryCard: View {
         .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
         .sheet(isPresented: $showDetail) {
             MonthlyActionsDetailSheet(
-                title: "今月の守り実績",
-                amountLabel: "今月守れたお金",
-                amountValue: appState.monthlyProtectedAmount.yen,
+                title: "今月の支出実績",
+                amountLabel: "今月の支出",
+                amountValue: appState.monthlyTotalExpenses.yen,
                 actions: appState.monthlyProtectActions
             )
         }
