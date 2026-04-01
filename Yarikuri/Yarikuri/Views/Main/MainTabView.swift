@@ -463,47 +463,51 @@ struct GrowSummaryCard: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            VStack(spacing: 2) {
-                Text("💹").font(.system(size: 18))
+            VStack(spacing: 4) {
+                Text("💹").font(.system(size: 22))
                 Text(grownValueText)
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundColor(Color(red: 0.2, green: 0.6, blue: 0.3))
                     .minimumScaleFactor(0.7).lineLimit(1)
                 Text("今月増やせたお金")
-                    .font(.system(size: 9))
+                    .font(.system(size: 10))
                     .foregroundColor(AppColor.textSecondary)
+                let diff = appState.incomeComparedToLastMonth
+                Text("先月比\(diff > 0 ? "+" : "")\(diff.yen)")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(diff > 0 ? AppColor.secondary : diff < 0 ? AppColor.danger : AppColor.textSecondary)
             }
             .frame(maxWidth: .infinity)
 
-            Divider().frame(height: 32)
+            Divider().frame(height: 40)
 
-            VStack(spacing: 2) {
-                Text("📚").font(.system(size: 18))
+            VStack(spacing: 4) {
+                Text("📚").font(.system(size: 22))
                 Text("\(appState.monthlyGrowActions.count)件")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundColor(AppColor.primary)
                 Text("今月学んだこと")
-                    .font(.system(size: 9))
+                    .font(.system(size: 10))
                     .foregroundColor(AppColor.textSecondary)
             }
             .frame(maxWidth: .infinity)
 
-            Divider().frame(height: 32)
+            Divider().frame(height: 40)
 
             Button(action: { showDetail = true }) {
-                VStack(spacing: 2) {
+                VStack(spacing: 4) {
                     Image(systemName: "chevron.right.circle.fill")
                         .font(.system(size: 22))
                         .foregroundColor(Color(red: 0.18, green: 0.62, blue: 0.35).opacity(0.7))
                     Text("詳細")
-                        .font(.system(size: 9))
+                        .font(.system(size: 10))
                         .foregroundColor(AppColor.textSecondary)
                 }
             }
             .buttonStyle(.plain)
             .frame(width: 56)
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, 12)
         .padding(.horizontal, 8)
         .background(
             LinearGradient(
