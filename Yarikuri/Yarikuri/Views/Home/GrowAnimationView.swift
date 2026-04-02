@@ -200,7 +200,7 @@ struct GrowAnimationView: View {
             // やりくりん
             CoronView(size: 50, emotion: .happy, animate: true, level: mascotLevel)
                 .frame(width: 68, height: 76)
-                .offset(x: -10, y: floorTopY - 76/2 + bobOffset + jumpOffset)
+                .offset(x: -10, y: floorTopY - 76/2 + jumpOffset)
                 .onTapGesture { bounce() }
 
             // 吹き出し
@@ -329,10 +329,10 @@ struct GrowAnimationView: View {
     }
 
     private func bounce() {
-        withAnimation(.easeOut(duration: 0.18)) {
-            jumpOffset = -36
+        withAnimation(.interpolatingSpring(stiffness: 400, damping: 8)) {
+            jumpOffset = -34
         }
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.45).delay(0.18)) {
+        withAnimation(.interpolatingSpring(stiffness: 180, damping: 12).delay(0.13)) {
             jumpOffset = 0
         }
     }
