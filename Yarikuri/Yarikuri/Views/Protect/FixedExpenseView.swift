@@ -81,8 +81,8 @@ struct FixedExpenseView: View {
         }.suffix(12))
     }
 
-    private var latestFixedExpenseAmount: Int? {
-        chartData.last?.totalAmount
+    private var totalFixedExpenseAllTime: Int {
+        appState.fixedExpenseHistory.reduce(0) { $0 + $1.totalAmount }
     }
 
     private var fixedExpenseChartCard: some View {
@@ -92,12 +92,12 @@ struct FixedExpenseView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(AppColor.textPrimary)
                 Spacer()
-                if let latest = latestFixedExpenseAmount {
+                if !chartData.isEmpty {
                     VStack(alignment: .trailing, spacing: 1) {
-                        Text("直近の月額")
+                        Text("固定費年間合計")
                             .font(.system(size: 10))
                             .foregroundColor(AppColor.textTertiary)
-                        Text(latest.yen)
+                        Text(totalFixedExpenseAllTime.yen)
                             .font(.system(size: 15, weight: .bold))
                             .foregroundColor(AppColor.primary)
                     }
