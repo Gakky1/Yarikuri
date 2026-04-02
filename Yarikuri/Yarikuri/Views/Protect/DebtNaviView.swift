@@ -642,7 +642,8 @@ struct DebtRepaymentChartView: View {
                         Text("完済まで")
                             .font(.system(size: 10))
                             .foregroundColor(AppColor.textTertiary)
-                        Text(month == 0 ? "今" : formatMonths(month))
+                        let remaining = maxFutureMonths - month
+                        Text(remaining <= 0 ? "完済！" : formatMonths(remaining))
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(AppColor.primary)
                     }
@@ -742,14 +743,11 @@ struct DebtRepaymentChartView: View {
                                         selectedMonth = nil; selectedBalance = nil; return
                                     }
                                     if let rawMonth: Int = proxy.value(atX: xPos) {
-                                        let clamped = max(0, min(rawMonth, maxFutureMonths))
-                                        if let nearest = allPoints.min(by: {
-                                            abs($0.month - clamped) < abs($1.month - clamped)
-                                        }) {
-                                            withAnimation(.easeInOut(duration: 0.1)) {
-                                                selectedMonth = nearest.month
-                                                selectedBalance = nearest.balance
-                                            }
+                                        let month = max(0, min(rawMonth, maxFutureMonths))
+                                        let balance = debts.reduce(0.0) { $0 + balanceAt(debt: $1, month: month) }
+                                        withAnimation(.easeInOut(duration: 0.1)) {
+                                            selectedMonth = month
+                                            selectedBalance = balance
                                         }
                                     }
                                 }
