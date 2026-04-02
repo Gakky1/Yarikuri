@@ -42,7 +42,7 @@ struct PaymentDetailView: View {
                     .padding(.top, 8)
                 }
             }
-            .navigationTitle("支払い詳細")
+            .navigationTitle("一時的な支払い詳細")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -177,7 +177,7 @@ struct PaymentDetailView: View {
         let total     = appState.scheduledPayments.count
         return HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("支払い予定合計（未払い）")
+                Text("一時的な支払い予定合計（未払い）")
                     .font(.system(size: 13))
                     .foregroundColor(AppColor.textSecondary)
                 Text(appState.totalAllUnpaidPayments.yen)
