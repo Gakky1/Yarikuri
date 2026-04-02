@@ -199,6 +199,8 @@ final class AppState: ObservableObject {
 
         // デモ用：過去13ヶ月の固定費履歴
         fixedExpenseHistory = [
+            FixedExpenseMonthRecord(year: 2025, month:  1, totalAmount: 98_200),
+            FixedExpenseMonthRecord(year: 2025, month:  2, totalAmount: 97_500),
             FixedExpenseMonthRecord(year: 2025, month:  3, totalAmount: 96_400),
             FixedExpenseMonthRecord(year: 2025, month:  4, totalAmount: 95_800),
             FixedExpenseMonthRecord(year: 2025, month:  5, totalAmount: 95_800),
@@ -219,6 +221,8 @@ final class AppState: ObservableObject {
 
         // デモ用：過去13ヶ月の今月の支払い履歴
         scheduledPaymentHistory = [
+            ScheduledPaymentMonthRecord(year: 2025, month:  1, totalAmount: 31_000),
+            ScheduledPaymentMonthRecord(year: 2025, month:  2, totalAmount: 24_500),
             ScheduledPaymentMonthRecord(year: 2025, month:  3, totalAmount: 42_000),
             ScheduledPaymentMonthRecord(year: 2025, month:  4, totalAmount: 18_500),
             ScheduledPaymentMonthRecord(year: 2025, month:  5, totalAmount: 34_000),
@@ -239,6 +243,8 @@ final class AppState: ObservableObject {
 
         // デモ用：過去13ヶ月の収入履歴
         incomeHistory = [
+            IncomeRecord(year: 2025, month:  1, amount: 215_000),
+            IncomeRecord(year: 2025, month:  2, amount: 216_500),
             IncomeRecord(year: 2025, month:  3, amount: 218_000),
             IncomeRecord(year: 2025, month:  4, amount: 221_000),
             IncomeRecord(year: 2025, month:  5, amount: 219_500),
