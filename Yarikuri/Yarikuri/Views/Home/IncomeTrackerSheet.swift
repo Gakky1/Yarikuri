@@ -1,6 +1,13 @@
 import SwiftUI
 import Charts
 
+private struct IncomeChartPoint: Identifiable {
+    let id = UUID()
+    let month: Int
+    let amount: Int
+    let year: Int
+}
+
 // MARK: - 収入トラッカーシート
 struct IncomeTrackerSheet: View {
     @EnvironmentObject var appState: AppState
@@ -19,14 +26,6 @@ struct IncomeTrackerSheet: View {
         return Array((current - 5)...current).reversed()
     }
 
-    private var chartData: [IncomeRecord] {
-        let sorted = appState.incomeHistory.sorted {
-            if $0.year != $1.year { return $0.year < $1.year }
-            return $0.month < $1.month
-        }
-        return Array(sorted.suffix(12))
-    }
-
     private var totalThisYear: Int {
         let year = Calendar.current.component(.year, from: Date())
         return appState.incomeHistory
@@ -38,6 +37,20 @@ struct IncomeTrackerSheet: View {
         let grouped = Dictionary(grouping: appState.incomeHistory, by: { $0.year })
         return grouped.map { (year: $0.key, total: $0.value.reduce(0) { $0 + $1.amount }) }
             .sorted { $0.year > $1.year }
+    }
+
+    private var incomeChartPoints: [IncomeChartPoint] {
+        appState.incomeHistory.map { IncomeChartPoint(month: $0.month, amount: $0.amount, year: $0.year) }
+    }
+
+    private var incomeYears: [Int] {
+        Array(Set(appState.incomeHistory.map { $0.year })).sorted()
+    }
+
+    private func incomeColor(for year: Int) -> Color {
+        let colors: [Color] = [AppColor.tertiary, AppColor.safe, AppColor.secondary, AppColor.caution]
+        let idx = incomeYears.firstIndex(of: year) ?? 0
+        return colors[idx % colors.count]
     }
 
     private var averageMonthly: Int {
@@ -227,14 +240,14 @@ struct IncomeTrackerSheet: View {
                                     .foregroundColor(AppColor.textTertiary)
                                 Text(item.total.yen)
                                     .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(AppColor.safe)
+                                    .foregroundColor(incomeColor(for: item.year))
                             }
                         }
                     }
                 }
             }
 
-            if chartData.isEmpty {
+            if incomeChartPoints.isEmpty {
                 // データなし時のプレースホルダー
                 VStack(spacing: 8) {
                     Image(systemName: "chart.line.uptrend.xyaxis")
@@ -247,22 +260,26 @@ struct IncomeTrackerSheet: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 140)
             } else {
-                Chart(chartData) { record in
-                    LineMark(
-                        x: .value("月", "\(record.year % 100)/\(record.month)"),
-                        y: .value("収入", record.amount)
-                    )
-                    .foregroundStyle(AppColor.safe)
-                    .lineStyle(StrokeStyle(lineWidth: 2.2))
-                    .interpolationMethod(.catmullRom)
+                Chart {
+                    ForEach(incomeChartPoints) { point in
+                        LineMark(
+                            x: .value("月", point.month),
+                            y: .value("収入", point.amount),
+                            series: .value("年", String(point.year))
+                        )
+                        .foregroundStyle(incomeColor(for: point.year))
+                        .lineStyle(StrokeStyle(lineWidth: 2.2))
+                        .interpolationMethod(.catmullRom)
 
-                    PointMark(
-                        x: .value("月", "\(record.year % 100)/\(record.month)"),
-                        y: .value("収入", record.amount)
-                    )
-                    .foregroundStyle(AppColor.safe)
-                    .symbolSize(28)
+                        PointMark(
+                            x: .value("月", point.month),
+                            y: .value("収入", point.amount)
+                        )
+                        .foregroundStyle(incomeColor(for: point.year))
+                        .symbolSize(28)
+                    }
                 }
+                .chartXScale(domain: 1...12)
                 .frame(height: 180)
                 .chartYAxis {
                     AxisMarks(position: .leading) { value in
@@ -277,10 +294,12 @@ struct IncomeTrackerSheet: View {
                     }
                 }
                 .chartXAxis {
-                    AxisMarks { value in
+                    AxisMarks(values: [1, 3, 6, 9, 12]) { value in
+                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                            .foregroundStyle(Color.gray.opacity(0.18))
                         AxisValueLabel {
-                            if let s = value.as(String.self) {
-                                Text(s)
+                            if let m = value.as(Int.self) {
+                                Text("\(m)月")
                                     .font(.system(size: 9))
                                     .foregroundColor(AppColor.textTertiary)
                             }
