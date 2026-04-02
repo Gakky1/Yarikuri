@@ -32,17 +32,17 @@ struct GrowAnimationView: View {
 
     private var speechText: String {
         let hasItem = { items.contains($0) }
-        if hasItem("trophy") && hasItem("wine") { return "成功を祝えそう🥂" }
-        if hasItem("bag")    && hasItem("art")  { return "センスいい生活できそう🎨" }
-        if hasItem("dining") && hasItem("wine") { return "豪華ディナーできそう🍽️" }
-        if hasItem("trophy") { return "目標達成できちゃいそう！" }
-        if hasItem("bag")    { return "欲しいもの買えそう！👜" }
+        if hasItem("trophy") && hasItem("wine") { return "成功、祝えそうりん🥂" }
+        if hasItem("bag")    && hasItem("art")  { return "センスいい生活できそうりん🎨" }
+        if hasItem("dining") && hasItem("wine") { return "豪華ディナーできそうりん🍽️" }
+        if hasItem("trophy") { return "目標達成できちゃいそうりん！" }
+        if hasItem("bag")    { return "欲しいもの買えそうりん👜" }
         switch roomLevel {
-        case 1: return "もっと増やせそう！📈"
-        case 2: return "いいもの食べれそう🍱"
-        case 3: return "欲しいもの買えそう！👜"
-        case 4: return "贅沢できちゃいそう🥩"
-        default: return "夢の暮らしになれそう🥂"
+        case 1: return "もっと増やせそうりん📈"
+        case 2: return "いいもの食べれそうりん🍱"
+        case 3: return "欲しいもの買えそうりん👜"
+        case 4: return "贅沢できちゃいそうりん🥩"
+        default: return "夢の暮らしになれそうりん🥂"
         }
     }
 

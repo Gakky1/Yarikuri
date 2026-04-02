@@ -32,17 +32,17 @@ struct ProtectAnimationView: View {
 
     private var speechText: String {
         let hasItem = { items.contains($0) }
-        if hasItem("coffee") && hasItem("suitcase") { return "旅先でもカフェできそう✈️" }
-        if hasItem("book")   && hasItem("candle")   { return "ゆっくり読書できそう📚" }
-        if hasItem("frame")  && hasItem("suitcase") { return "旅の思い出増えそう🗼" }
-        if hasItem("coffee")   { return "カフェ行けそうかも☕" }
-        if hasItem("suitcase") { return "旅行できちゃいそう✈️" }
+        if hasItem("coffee") && hasItem("suitcase") { return "旅先でもカフェできそうりん✈️" }
+        if hasItem("book")   && hasItem("candle")   { return "ゆっくり読書できそうりん📚" }
+        if hasItem("frame")  && hasItem("suitcase") { return "旅の思い出、増えそうりん🗼" }
+        if hasItem("coffee")   { return "カフェ行けそうりん☕" }
+        if hasItem("suitcase") { return "旅行できちゃいそうりん✈️" }
         switch roomLevel {
-        case 1: return "節約できそう！💪"
-        case 2: return "カフェ行けそうかも☕"
-        case 3: return "旅行できちゃいそう✈️"
-        case 4: return "どこでも行けそう〜🗺️"
-        default: return "夢、全部叶いそう！✨"
+        case 1: return "節約できそうりん💪"
+        case 2: return "カフェ行けそうりん☕"
+        case 3: return "旅行できちゃいそうりん✈️"
+        case 4: return "どこでも行けそうりん🗺️"
+        default: return "夢、全部叶いそうりん✨"
         }
     }
 
