@@ -29,18 +29,18 @@ struct FixedExpenseView: View {
 
                 ScrollView {
                     VStack(spacing: 16) {
-                        // 固定費推移グラフ
-                        fixedExpenseChartCard
-
                         // 合計サマリー
                         totalSummaryCard
+
+                        // 固定費推移グラフ
+                        fixedExpenseChartCard
 
                         // 見直し候補セクション
                         if !reviewCandidates.isEmpty {
                             reviewCandidatesCard
                         }
 
-                        // 全固定費リスト
+                        // 今月の固定費明細
                         allExpensesCard
 
                         Spacer().frame(height: 20)
@@ -321,7 +321,7 @@ struct FixedExpenseView: View {
     // MARK: - 全固定費リスト
     private var allExpensesCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("すべての固定費")
+            Text("今月の固定費明細")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(AppColor.textSecondary)
 
