@@ -87,7 +87,7 @@ struct IncomeTrackerSheet: View {
                 .padding(.vertical, 12)
             }
             .background(AppColor.background)
-            .navigationTitle("収入の記録")
+            .navigationTitle("収入")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

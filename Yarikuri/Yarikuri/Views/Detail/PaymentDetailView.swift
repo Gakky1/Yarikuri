@@ -34,6 +34,11 @@ struct PaymentDetailView: View {
                         // 支払い一覧
                         paymentListCard
 
+                        // 過去の支払い明細
+                        if !appState.scheduledPaymentHistory.isEmpty {
+                            pastPaymentHistoryCard
+                        }
+
                         Spacer().frame(height: 20)
                     }
                     .padding(.horizontal, 16)
@@ -287,6 +292,45 @@ struct PaymentDetailView: View {
                     }
                 }
             }
+        }
+        .cardStyle()
+    }
+
+    // MARK: - 過去の支払い明細
+    private var pastPaymentHistoryCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("過去の一時的な支払い")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(AppColor.textSecondary)
+
+            let sorted = appState.scheduledPaymentHistory.sorted {
+                if $0.year != $1.year { return $0.year > $1.year }
+                return $0.month > $1.month
+            }
+            VStack(spacing: 1) {
+                ForEach(Array(sorted.enumerated()), id: \.element.id) { index, record in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(String(record.year) + "年" + String(record.month) + "月")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(AppColor.textPrimary)
+                        }
+                        Spacer()
+                        Text(record.totalAmount.yen)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(AppColor.caution)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(AppColor.cardBackground)
+
+                    if index < sorted.count - 1 {
+                        Divider().padding(.horizontal, 14)
+                    }
+                }
+            }
+            .cornerRadius(12)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.2), lineWidth: 0.5))
         }
         .cardStyle()
     }
