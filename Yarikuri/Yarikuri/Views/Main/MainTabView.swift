@@ -352,7 +352,7 @@ struct GrowScreenView: View {
                     GrowAnimationView()
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                        GrowNavCard(emoji: "💴", title: "収入の記録と推移",
+                        GrowNavCard(emoji: "💴", title: "収入の記録",
                                     subtitle: incomeSubtitle,
                                     color: Color.green.opacity(0.8),
                                     action: { showIncome = true })
