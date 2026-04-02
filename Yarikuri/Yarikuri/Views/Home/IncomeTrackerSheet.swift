@@ -34,6 +34,12 @@ struct IncomeTrackerSheet: View {
             .reduce(0) { $0 + $1.amount }
     }
 
+    private var yearlyTotals: [(year: Int, total: Int)] {
+        let grouped = Dictionary(grouping: appState.incomeHistory, by: { $0.year })
+        return grouped.map { (year: $0.key, total: $0.value.reduce(0) { $0 + $1.amount }) }
+            .sorted { $0.year > $1.year }
+    }
+
     private var averageMonthly: Int {
         guard !appState.incomeHistory.isEmpty else { return 0 }
         return appState.incomeHistory.reduce(0) { $0 + $1.amount } / appState.incomeHistory.count
@@ -207,19 +213,23 @@ struct IncomeTrackerSheet: View {
     // MARK: - グラフ
     private var chartSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline) {
+            HStack(alignment: .top) {
                 Text("収入の推移")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(AppColor.textPrimary)
                 Spacer()
-                if totalThisYear > 0 {
-                    VStack(alignment: .trailing, spacing: 1) {
-                        Text(String(thisYear) + "年 合計")
-                            .font(.system(size: 10))
-                            .foregroundColor(AppColor.textTertiary)
-                        Text(totalThisYear.yen)
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(AppColor.primary)
+                if !yearlyTotals.isEmpty {
+                    VStack(alignment: .trailing, spacing: 3) {
+                        ForEach(yearlyTotals, id: \.year) { item in
+                            HStack(spacing: 5) {
+                                Text(String(item.year) + "年")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(AppColor.textTertiary)
+                                Text(item.total.yen)
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(AppColor.primary)
+                            }
+                        }
                     }
                 }
             }
@@ -227,7 +237,7 @@ struct IncomeTrackerSheet: View {
             if chartData.isEmpty {
                 // データなし時のプレースホルダー
                 VStack(spacing: 8) {
-                    Image(systemName: "chart.bar")
+                    Image(systemName: "chart.line.uptrend.xyaxis")
                         .font(.system(size: 36))
                         .foregroundColor(AppColor.textTertiary.opacity(0.5))
                     Text("収入を記録するとグラフが表示されます")
@@ -238,12 +248,20 @@ struct IncomeTrackerSheet: View {
                 .frame(height: 140)
             } else {
                 Chart(chartData) { record in
-                    BarMark(
+                    LineMark(
                         x: .value("月", "\(record.year % 100)/\(record.month)"),
                         y: .value("収入", record.amount)
                     )
-                    .foregroundStyle(AppColor.primary.gradient)
-                    .cornerRadius(4)
+                    .foregroundStyle(AppColor.primary)
+                    .lineStyle(StrokeStyle(lineWidth: 2.2))
+                    .interpolationMethod(.catmullRom)
+
+                    PointMark(
+                        x: .value("月", "\(record.year % 100)/\(record.month)"),
+                        y: .value("収入", record.amount)
+                    )
+                    .foregroundStyle(AppColor.primary)
+                    .symbolSize(28)
                 }
                 .frame(height: 180)
                 .chartYAxis {
