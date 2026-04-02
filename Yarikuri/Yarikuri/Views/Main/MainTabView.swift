@@ -327,7 +327,7 @@ struct GrowScreenView: View {
     @State private var showCareer      = false
     @State private var showSetsuzei    = false
     @State private var showNisa        = false
-    @State private var showChiritsumo  = false
+
     @State private var showMaster      = false
 
     var body: some View {
@@ -372,10 +372,7 @@ struct GrowScreenView: View {
                                     subtitle: "積立・成長投資枠等",
                                     color: Color(red: 0.18, green: 0.62, blue: 0.35),
                                     action: { showNisa = true })
-                        GrowNavCard(emoji: "☕", title: "ちりつも作戦",
-                                    subtitle: "ポイ活・節約習慣等",
-                                    color: AppColor.secondary,
-                                    action: { showChiritsumo = true })
+
                         LockedNavCard(
                             unlockedEmoji: "👑",
                             unlockedTitle: "マネー\nマスター術",
@@ -399,7 +396,7 @@ struct GrowScreenView: View {
         .sheet(isPresented: $showCareer)     { GrowCareerSheet() }
         .sheet(isPresented: $showSetsuzei)   { GrowSetsuzeiSheet() }
         .sheet(isPresented: $showNisa)       { GrowNisaSheet() }
-        .sheet(isPresented: $showChiritsumo) { GrowChiritsumoSheet() }
+
         .sheet(isPresented: $showMaster)     { GrowMasterSheet() }
     }
 
