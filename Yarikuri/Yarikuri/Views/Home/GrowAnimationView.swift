@@ -47,6 +47,7 @@ struct GrowAnimationView: View {
     }
 
     @State private var bobOffset: CGFloat = 0
+    @State private var jumpOffset: CGFloat = 0
     @State private var bubbleOpacity: Double = 0
     @State private var glowPulse: CGFloat = 1.0
 
@@ -199,7 +200,8 @@ struct GrowAnimationView: View {
             // やりくりん
             CoronView(size: 50, emotion: .happy, animate: true, level: mascotLevel)
                 .frame(width: 68, height: 76)
-                .offset(x: -10, y: floorTopY - 76/2 + bobOffset)
+                .offset(x: -10, y: floorTopY - 76/2 + bobOffset + jumpOffset)
+                .onTapGesture { bounce() }
 
             // 吹き出し
             speechBubble
@@ -323,6 +325,15 @@ struct GrowAnimationView: View {
             withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
                 glowPulse = 1.18
             }
+        }
+    }
+
+    private func bounce() {
+        withAnimation(.easeOut(duration: 0.18)) {
+            jumpOffset = -36
+        }
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.45).delay(0.18)) {
+            jumpOffset = 0
         }
     }
 }

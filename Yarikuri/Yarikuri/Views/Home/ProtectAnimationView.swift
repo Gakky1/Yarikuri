@@ -48,6 +48,7 @@ struct ProtectAnimationView: View {
 
     @State private var bobOffset: CGFloat = 0
     @State private var bubbleOpacity: Double = 0
+    @State private var jumpOffset: CGFloat = 0
 
     private let floorTopY: CGFloat = 53
 
@@ -162,7 +163,8 @@ struct ProtectAnimationView: View {
             // やりくりん
             CoronView(size: 50, emotion: .cheer, animate: true, level: mascotLevel)
                 .frame(width: 68, height: 76)
-                .offset(x: -10, y: floorTopY - 76/2 + bobOffset)
+                .offset(x: -10, y: floorTopY - 76/2 + bobOffset + jumpOffset)
+                .onTapGesture { bounce() }
 
             // 吹き出し
             speechBubble
@@ -278,6 +280,15 @@ struct ProtectAnimationView: View {
         }
         withAnimation(.easeInOut(duration: 0.6)) {
             bubbleOpacity = 1
+        }
+    }
+
+    private func bounce() {
+        withAnimation(.easeOut(duration: 0.18)) {
+            jumpOffset = -36
+        }
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.45).delay(0.18)) {
+            jumpOffset = 0
         }
     }
 }
