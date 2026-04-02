@@ -75,7 +75,7 @@ struct ProtectView: View {
                 }
 
                 HStack(spacing: 12) {
-                    fixedStat(label: "固定費合計", value: appState.totalFixedExpenses.yen, color: AppColor.primary)
+                    fixedStat(label: "今月の固定費合計", value: appState.totalFixedExpenses.yen, color: AppColor.primary)
                     fixedStat(label: "件数", value: "\(appState.fixedExpenses.count)件", color: AppColor.tertiary)
 
                     let reviewCount = appState.fixedExpenses.filter { $0.isReviewCandidate }.count

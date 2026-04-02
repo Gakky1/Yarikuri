@@ -197,7 +197,7 @@ struct FixedExpenseView: View {
     private var totalSummaryCard: some View {
         HStack(spacing: 20) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("固定費合計").font(.system(size: 13)).foregroundColor(AppColor.textSecondary)
+                Text("今月の固定費合計").font(.system(size: 13)).foregroundColor(AppColor.textSecondary)
                 Text(appState.totalFixedExpenses.yen)
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(AppColor.textPrimary)
