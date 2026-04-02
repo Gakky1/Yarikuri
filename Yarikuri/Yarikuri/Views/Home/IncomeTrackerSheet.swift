@@ -20,6 +20,7 @@ struct IncomeTrackerSheet: View {
     @State private var showingDeleteAlert = false
     @State private var recordToDelete: IncomeRecord?
     @State private var recordToEdit: IncomeRecord? = nil
+    @State private var selectedChartMonth: Int? = nil
 
     private var years: [Int] {
         let current = Calendar.current.component(.year, from: Date())
@@ -37,6 +38,10 @@ struct IncomeTrackerSheet: View {
         let grouped = Dictionary(grouping: appState.incomeHistory, by: { $0.year })
         return grouped.map { (year: $0.key, total: $0.value.reduce(0) { $0 + $1.amount }) }
             .sorted { $0.year > $1.year }
+    }
+
+    private func incomeAmount(year: Int, month: Int) -> Int? {
+        incomeChartPoints.first { $0.year == year && $0.month == month }?.amount
     }
 
     private var incomeChartPoints: [IncomeChartPoint] {
@@ -247,6 +252,41 @@ struct IncomeTrackerSheet: View {
                 }
             }
 
+            // タップ時情報表示（固定高さ）
+            ZStack {
+                if let month = selectedChartMonth {
+                    HStack(spacing: 12) {
+                        Text("\(month)月")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(AppColor.textPrimary)
+                        ForEach(incomeYears, id: \.self) { year in
+                            if let amt = incomeAmount(year: year, month: month) {
+                                Rectangle().fill(AppColor.sectionBackground).frame(width: 1, height: 32)
+                                VStack(spacing: 2) {
+                                    Text(String(year) + "年")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(AppColor.textTertiary)
+                                    Text(amt.yen)
+                                        .font(.system(size: 13, weight: .bold))
+                                        .foregroundColor(incomeColor(for: year))
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(AppColor.sectionBackground.opacity(0.8))
+                    .cornerRadius(10)
+                    .frame(maxWidth: .infinity)
+                } else {
+                    Text("グラフをタップ・ドラッグして確認")
+                        .font(.system(size: 11))
+                        .foregroundColor(AppColor.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
+            .frame(height: 50)
+
             if incomeChartPoints.isEmpty {
                 // データなし時のプレースホルダー
                 VStack(spacing: 8) {
@@ -278,6 +318,21 @@ struct IncomeTrackerSheet: View {
                         .foregroundStyle(incomeColor(for: point.year))
                         .symbolSize(28)
                     }
+                    if let month = selectedChartMonth {
+                        RuleMark(x: .value("月", month))
+                            .foregroundStyle(AppColor.textSecondary.opacity(0.4))
+                            .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
+                        ForEach(incomeYears, id: \.self) { year in
+                            if let amt = incomeAmount(year: year, month: month) {
+                                PointMark(
+                                    x: .value("月", month),
+                                    y: .value("収入", amt)
+                                )
+                                .foregroundStyle(incomeColor(for: year))
+                                .symbolSize(80)
+                            }
+                        }
+                    }
                 }
                 .chartXScale(domain: 1...12)
                 .frame(height: 180)
@@ -304,6 +359,25 @@ struct IncomeTrackerSheet: View {
                                     .foregroundColor(AppColor.textTertiary)
                             }
                         }
+                    }
+                }
+                .chartOverlay { proxy in
+                    GeometryReader { geo in
+                        Rectangle().fill(.clear).contentShape(Rectangle())
+                            .gesture(
+                                DragGesture(minimumDistance: 0)
+                                    .onChanged { value in
+                                        let originX = geo[proxy.plotAreaFrame].origin.x
+                                        let xPos = value.location.x - originX
+                                        guard xPos >= 0, xPos <= geo[proxy.plotAreaFrame].width else {
+                                            selectedChartMonth = nil; return
+                                        }
+                                        if let raw: Int = proxy.value(atX: xPos) {
+                                            selectedChartMonth = max(1, min(raw, 12))
+                                        }
+                                    }
+                                    .onEnded { _ in selectedChartMonth = nil }
+                            )
                     }
                 }
             }

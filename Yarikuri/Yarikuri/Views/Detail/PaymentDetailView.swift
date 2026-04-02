@@ -16,6 +16,7 @@ struct PaymentDetailView: View {
     @State private var newPaymentName = ""
     @State private var newPaymentAmountText = ""
     @State private var newPaymentDate = Date()
+    @State private var selectedChartMonth: Int? = nil
 
     var body: some View {
         NavigationStack {
@@ -63,6 +64,10 @@ struct PaymentDetailView: View {
     }
 
     // MARK: - 支払い推移グラフ
+    private func paymentAmount(year: Int, month: Int) -> Int? {
+        paymentChartPoints.first { $0.year == year && $0.month == month }?.amount
+    }
+
     private var paymentChartPoints: [PaymentChartPoint] {
         appState.scheduledPaymentHistory.map {
             PaymentChartPoint(month: $0.month, amount: $0.totalAmount, year: $0.year)
@@ -108,6 +113,41 @@ struct PaymentDetailView: View {
                 }
             }
 
+            // タップ時情報表示（固定高さ）
+            ZStack {
+                if let month = selectedChartMonth {
+                    HStack(spacing: 12) {
+                        Text("\(month)月")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(AppColor.textPrimary)
+                        ForEach(paymentYears, id: \.self) { year in
+                            if let amt = paymentAmount(year: year, month: month) {
+                                Rectangle().fill(AppColor.sectionBackground).frame(width: 1, height: 32)
+                                VStack(spacing: 2) {
+                                    Text(String(year) + "年")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(AppColor.textTertiary)
+                                    Text(amt.yen)
+                                        .font(.system(size: 13, weight: .bold))
+                                        .foregroundColor(paymentColor(for: year))
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(AppColor.sectionBackground.opacity(0.8))
+                    .cornerRadius(10)
+                    .frame(maxWidth: .infinity)
+                } else {
+                    Text("グラフをタップ・ドラッグして確認")
+                        .font(.system(size: 11))
+                        .foregroundColor(AppColor.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
+            .frame(height: 50)
+
             if paymentChartPoints.isEmpty {
                 VStack(spacing: 8) {
                     Image(systemName: "chart.line.uptrend.xyaxis")
@@ -138,6 +178,21 @@ struct PaymentDetailView: View {
                         .foregroundStyle(paymentColor(for: point.year))
                         .symbolSize(28)
                     }
+                    if let month = selectedChartMonth {
+                        RuleMark(x: .value("月", month))
+                            .foregroundStyle(AppColor.textSecondary.opacity(0.4))
+                            .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
+                        ForEach(paymentYears, id: \.self) { year in
+                            if let amt = paymentAmount(year: year, month: month) {
+                                PointMark(
+                                    x: .value("月", month),
+                                    y: .value("支払い", amt)
+                                )
+                                .foregroundStyle(paymentColor(for: year))
+                                .symbolSize(80)
+                            }
+                        }
+                    }
                 }
                 .chartXScale(domain: 1...12)
                 .frame(height: 180)
@@ -164,6 +219,25 @@ struct PaymentDetailView: View {
                                     .foregroundColor(AppColor.textTertiary)
                             }
                         }
+                    }
+                }
+                .chartOverlay { proxy in
+                    GeometryReader { geo in
+                        Rectangle().fill(.clear).contentShape(Rectangle())
+                            .gesture(
+                                DragGesture(minimumDistance: 0)
+                                    .onChanged { value in
+                                        let originX = geo[proxy.plotAreaFrame].origin.x
+                                        let xPos = value.location.x - originX
+                                        guard xPos >= 0, xPos <= geo[proxy.plotAreaFrame].width else {
+                                            selectedChartMonth = nil; return
+                                        }
+                                        if let raw: Int = proxy.value(atX: xPos) {
+                                            selectedChartMonth = max(1, min(raw, 12))
+                                        }
+                                    }
+                                    .onEnded { _ in selectedChartMonth = nil }
+                            )
                     }
                 }
             }

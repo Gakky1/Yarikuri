@@ -15,6 +15,7 @@ struct FixedExpenseView: View {
     @State private var showAddForm = false
     @State private var showReport = false
     @State private var selectedReviewExpense: FixedExpense? = nil
+    @State private var selectedChartMonth: Int? = nil
     @State private var newName = ""
     @State private var newAmountText = ""
     @State private var newCategory: FixedExpenseCategory = .other
@@ -87,6 +88,10 @@ struct FixedExpenseView: View {
         }
     }
 
+    private func fixedExpAmount(year: Int, month: Int) -> Int? {
+        fixedExpChartPoints.first { $0.year == year && $0.month == month }?.amount
+    }
+
     private var fixedExpYears: [Int] {
         Array(Set(appState.fixedExpenseHistory.map { $0.year })).sorted()
     }
@@ -126,6 +131,41 @@ struct FixedExpenseView: View {
                 }
             }
 
+            // タップ時情報表示（固定高さ）
+            ZStack {
+                if let month = selectedChartMonth {
+                    HStack(spacing: 12) {
+                        Text("\(month)月")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(AppColor.textPrimary)
+                        ForEach(fixedExpYears, id: \.self) { year in
+                            if let amt = fixedExpAmount(year: year, month: month) {
+                                Rectangle().fill(AppColor.sectionBackground).frame(width: 1, height: 32)
+                                VStack(spacing: 2) {
+                                    Text(String(year) + "年")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(AppColor.textTertiary)
+                                    Text(amt.yen)
+                                        .font(.system(size: 13, weight: .bold))
+                                        .foregroundColor(fixedExpColor(for: year))
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(AppColor.sectionBackground.opacity(0.8))
+                    .cornerRadius(10)
+                    .frame(maxWidth: .infinity)
+                } else {
+                    Text("グラフをタップ・ドラッグして確認")
+                        .font(.system(size: 11))
+                        .foregroundColor(AppColor.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
+            .frame(height: 50)
+
             if fixedExpChartPoints.isEmpty {
                 VStack(spacing: 8) {
                     Image(systemName: "chart.line.uptrend.xyaxis")
@@ -156,6 +196,21 @@ struct FixedExpenseView: View {
                         .foregroundStyle(fixedExpColor(for: point.year))
                         .symbolSize(28)
                     }
+                    if let month = selectedChartMonth {
+                        RuleMark(x: .value("月", month))
+                            .foregroundStyle(AppColor.textSecondary.opacity(0.4))
+                            .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
+                        ForEach(fixedExpYears, id: \.self) { year in
+                            if let amt = fixedExpAmount(year: year, month: month) {
+                                PointMark(
+                                    x: .value("月", month),
+                                    y: .value("固定費", amt)
+                                )
+                                .foregroundStyle(fixedExpColor(for: year))
+                                .symbolSize(80)
+                            }
+                        }
+                    }
                 }
                 .chartXScale(domain: 1...12)
                 .frame(height: 180)
@@ -182,6 +237,25 @@ struct FixedExpenseView: View {
                                     .foregroundColor(AppColor.textTertiary)
                             }
                         }
+                    }
+                }
+                .chartOverlay { proxy in
+                    GeometryReader { geo in
+                        Rectangle().fill(.clear).contentShape(Rectangle())
+                            .gesture(
+                                DragGesture(minimumDistance: 0)
+                                    .onChanged { value in
+                                        let originX = geo[proxy.plotAreaFrame].origin.x
+                                        let xPos = value.location.x - originX
+                                        guard xPos >= 0, xPos <= geo[proxy.plotAreaFrame].width else {
+                                            selectedChartMonth = nil; return
+                                        }
+                                        if let raw: Int = proxy.value(atX: xPos) {
+                                            selectedChartMonth = max(1, min(raw, 12))
+                                        }
+                                    }
+                                    .onEnded { _ in selectedChartMonth = nil }
+                            )
                     }
                 }
             }
