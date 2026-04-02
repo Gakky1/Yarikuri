@@ -17,6 +17,10 @@ struct PaymentDetailView: View {
     @State private var newPaymentAmountText = ""
     @State private var newPaymentDate = Date()
     @State private var selectedChartMonth: Int? = nil
+    @State private var editingRecordId: UUID? = nil
+    @State private var editingSnapshotId: UUID? = nil
+    @State private var editSnapshotName = ""
+    @State private var editSnapshotAmountText = ""
 
     var body: some View {
         NavigationStack {
@@ -61,6 +65,12 @@ struct PaymentDetailView: View {
             }
             .sheet(isPresented: $showAddPayment) {
                 addPaymentSheet
+            }
+            .sheet(isPresented: Binding(
+                get: { editingSnapshotId != nil },
+                set: { if !$0 { editingSnapshotId = nil; editingRecordId = nil } }
+            )) {
+                editSnapshotSheet
             }
         }
     }
@@ -335,7 +345,7 @@ struct PaymentDetailView: View {
                                 .background(AppColor.cardBackground)
                         } else {
                             ForEach(Array(record.payments.enumerated()), id: \.element.id) { idx, payment in
-                                HStack {
+                                HStack(spacing: 8) {
                                     Text(payment.name)
                                         .font(.system(size: 14))
                                         .foregroundColor(AppColor.textPrimary)
@@ -343,6 +353,27 @@ struct PaymentDetailView: View {
                                     Text(payment.amount.yen)
                                         .font(.system(size: 14, weight: .medium))
                                         .foregroundColor(AppColor.textPrimary)
+                                    Button {
+                                        editSnapshotName = payment.name
+                                        editSnapshotAmountText = String(payment.amount)
+                                        editingSnapshotId = payment.id
+                                        editingRecordId = record.id
+                                    } label: {
+                                        Image(systemName: "pencil")
+                                            .font(.system(size: 13))
+                                            .foregroundColor(AppColor.primary)
+                                            .frame(width: 28, height: 28)
+                                    }
+                                    .buttonStyle(.plain)
+                                    Button {
+                                        deleteSnapshot(recordId: record.id, snapshotId: payment.id)
+                                    } label: {
+                                        Image(systemName: "trash")
+                                            .font(.system(size: 13))
+                                            .foregroundColor(AppColor.caution)
+                                            .frame(width: 28, height: 28)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 10)
@@ -408,6 +439,60 @@ struct PaymentDetailView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("キャンセル") { showAddPayment = false }
+                }
+            }
+        }
+    }
+
+    // MARK: - 過去の明細：削除・更新
+    private func deleteSnapshot(recordId: UUID, snapshotId: UUID) {
+        guard let recIdx = appState.scheduledPaymentHistory.firstIndex(where: { $0.id == recordId }) else { return }
+        appState.scheduledPaymentHistory[recIdx].payments.removeAll { $0.id == snapshotId }
+        appState.scheduledPaymentHistory[recIdx].totalAmount = appState.scheduledPaymentHistory[recIdx].payments.reduce(0) { $0 + $1.amount }
+    }
+
+    private func saveSnapshotEdit() {
+        guard let recIdx = appState.scheduledPaymentHistory.firstIndex(where: { $0.id == editingRecordId }),
+              let snapIdx = appState.scheduledPaymentHistory[recIdx].payments.firstIndex(where: { $0.id == editingSnapshotId }),
+              let amount = Int(editSnapshotAmountText), !editSnapshotName.isEmpty else { return }
+        appState.scheduledPaymentHistory[recIdx].payments[snapIdx].name = editSnapshotName
+        appState.scheduledPaymentHistory[recIdx].payments[snapIdx].amount = amount
+        appState.scheduledPaymentHistory[recIdx].totalAmount = appState.scheduledPaymentHistory[recIdx].payments.reduce(0) { $0 + $1.amount }
+        editingSnapshotId = nil
+        editingRecordId = nil
+    }
+
+    // MARK: - 過去の明細：編集シート
+    private var editSnapshotSheet: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("支払いの名前").font(.caption).foregroundColor(AppColor.textSecondary)
+                    TextField("例: 自動車税", text: $editSnapshotName)
+                        .padding()
+                        .background(AppColor.inputBackground)
+                        .cornerRadius(10)
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("金額").font(.caption).foregroundColor(AppColor.textSecondary)
+                    TextField("例: 34500", text: $editSnapshotAmountText)
+                        .keyboardType(.numberPad)
+                        .padding()
+                        .background(AppColor.inputBackground)
+                        .cornerRadius(10)
+                }
+                Spacer()
+            }
+            .padding(24)
+            .navigationTitle("明細を編集")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("保存") { saveSnapshotEdit() }
+                        .foregroundColor(AppColor.primary)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("キャンセル") { editingSnapshotId = nil; editingRecordId = nil }
                 }
             }
         }
