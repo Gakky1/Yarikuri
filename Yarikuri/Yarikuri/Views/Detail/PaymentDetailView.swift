@@ -34,16 +34,13 @@ struct PaymentDetailView: View {
                         // 支払い一覧
                         paymentListCard
 
-                        // 固定費からの自動追加
-                        fixedFromDebtCard
-
                         Spacer().frame(height: 20)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
                 }
             }
-            .navigationTitle("一時的な支払い詳細")
+            .navigationTitle("一時的な支払いの詳細")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -292,45 +289,6 @@ struct PaymentDetailView: View {
             }
         }
         .cardStyle()
-    }
-
-    // MARK: - 借金からの返済
-    private var fixedFromDebtCard: some View {
-        Group {
-            if !appState.debts.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text("毎月の返済（自動計上）")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(AppColor.textSecondary)
-                        Spacer()
-                        Text("固定費に含む")
-                            .font(.system(size: 11))
-                            .foregroundColor(AppColor.textTertiary)
-                    }
-
-                    ForEach(appState.debts) { debt in
-                        HStack {
-                            Text(debt.debtType.emoji)
-                            Text(debt.lenderName)
-                                .font(.system(size: 14))
-                                .foregroundColor(AppColor.textPrimary)
-                            Spacer()
-                            Text("毎月\(debt.paymentDay)日")
-                                .font(.system(size: 12))
-                                .foregroundColor(AppColor.textTertiary)
-                            Text(debt.monthlyPayment.yen)
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(AppColor.danger)
-                        }
-                        .padding(10)
-                        .background(AppColor.dangerLight)
-                        .cornerRadius(8)
-                    }
-                }
-                .cardStyle()
-            }
-        }
     }
 
     // MARK: - 追加シート
