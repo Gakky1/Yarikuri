@@ -227,7 +227,7 @@ struct IncomeTrackerSheet: View {
                                     .foregroundColor(AppColor.textTertiary)
                                 Text(item.total.yen)
                                     .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(AppColor.primary)
+                                    .foregroundColor(AppColor.safe)
                             }
                         }
                     }
@@ -252,7 +252,7 @@ struct IncomeTrackerSheet: View {
                         x: .value("月", "\(record.year % 100)/\(record.month)"),
                         y: .value("収入", record.amount)
                     )
-                    .foregroundStyle(AppColor.primary)
+                    .foregroundStyle(AppColor.safe)
                     .lineStyle(StrokeStyle(lineWidth: 2.2))
                     .interpolationMethod(.catmullRom)
 
@@ -260,7 +260,7 @@ struct IncomeTrackerSheet: View {
                         x: .value("月", "\(record.year % 100)/\(record.month)"),
                         y: .value("収入", record.amount)
                     )
-                    .foregroundStyle(AppColor.primary)
+                    .foregroundStyle(AppColor.safe)
                     .symbolSize(28)
                 }
                 .frame(height: 180)
