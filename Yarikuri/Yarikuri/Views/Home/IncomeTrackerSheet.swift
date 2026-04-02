@@ -12,6 +12,7 @@ struct IncomeTrackerSheet: View {
     @State private var noteText: String = ""
     @State private var showingDeleteAlert = false
     @State private var recordToDelete: IncomeRecord?
+    @State private var recordToEdit: IncomeRecord? = nil
 
     private var years: [Int] {
         let current = Calendar.current.component(.year, from: Date())
@@ -70,6 +71,13 @@ struct IncomeTrackerSheet: View {
                         .foregroundColor(AppColor.primary)
                 }
             }
+            .sheet(item: $recordToEdit) { record in
+                IncomeEditSheet(record: record) { updated in
+                    if let idx = appState.incomeHistory.firstIndex(where: { $0.id == updated.id }) {
+                        appState.incomeHistory[idx] = updated
+                    }
+                }
+            }
         }
     }
 
@@ -85,7 +93,7 @@ struct IncomeTrackerSheet: View {
                 // 年ピッカー
                 Picker("年", selection: $selectedYear) {
                     ForEach(years, id: \.self) { year in
-                        Text("\(year)年").tag(year)
+                        Text(String(year) + "年").tag(year)
                     }
                 }
                 .pickerStyle(.menu)
@@ -206,7 +214,7 @@ struct IncomeTrackerSheet: View {
                 Spacer()
                 if totalThisYear > 0 {
                     VStack(alignment: .trailing, spacing: 1) {
-                        Text("\(thisYear)年 合計")
+                        Text(String(thisYear) + "年 合計")
                             .font(.system(size: 10))
                             .foregroundColor(AppColor.textTertiary)
                         Text(totalThisYear.yen)
@@ -296,6 +304,12 @@ struct IncomeTrackerSheet: View {
                         Text("¥\(record.amount.formattedYen)")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(AppColor.textPrimary)
+                        Button(action: { recordToEdit = record }) {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 13))
+                                .foregroundColor(AppColor.primary)
+                        }
+                        .padding(.leading, 12)
                         Button(action: {
                             recordToDelete = record
                             showingDeleteAlert = true
@@ -304,7 +318,7 @@ struct IncomeTrackerSheet: View {
                                 .font(.system(size: 13))
                                 .foregroundColor(AppColor.danger)
                         }
-                        .padding(.leading, 12)
+                        .padding(.leading, 8)
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
@@ -345,6 +359,89 @@ struct IncomeTrackerSheet: View {
         }
         amountText = ""
         noteText = ""
+    }
+}
+
+// MARK: - 収入編集シート
+private struct IncomeEditSheet: View {
+    let record: IncomeRecord
+    let onSave: (IncomeRecord) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var amountText: String
+    @State private var noteText: String
+
+    init(record: IncomeRecord, onSave: @escaping (IncomeRecord) -> Void) {
+        self.record = record
+        self.onSave = onSave
+        _amountText = State(initialValue: "\(record.amount)")
+        _noteText   = State(initialValue: record.note)
+    }
+
+    private var canSave: Bool {
+        (Int(amountText.filter { $0.isNumber }) ?? 0) > 0
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                // 年月ラベル（変更不可）
+                HStack {
+                    Text(record.displayLabel)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(AppColor.textPrimary)
+                    Spacer()
+                }
+
+                // 金額
+                HStack {
+                    Text("¥")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(AppColor.primary)
+                    TextField("手取り収入を入力", text: $amountText)
+                        .keyboardType(.numberPad)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(AppColor.textPrimary)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .background(AppColor.cardBackground)
+                .cornerRadius(12)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColor.primary.opacity(0.3), lineWidth: 1))
+
+                // メモ
+                TextField("メモ（任意）", text: $noteText)
+                    .font(.system(size: 14))
+                    .foregroundColor(AppColor.textPrimary)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(AppColor.cardBackground)
+                    .cornerRadius(12)
+
+                Spacer()
+            }
+            .padding(20)
+            .background(AppColor.background.ignoresSafeArea())
+            .navigationTitle("収入を編集")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("保存") {
+                        guard let amount = Int(amountText.filter { $0.isNumber }), amount > 0 else { return }
+                        var updated = record
+                        updated.amount = amount
+                        updated.note = noteText
+                        onSave(updated)
+                        dismiss()
+                    }
+                    .foregroundColor(canSave ? AppColor.primary : AppColor.textTertiary)
+                    .disabled(!canSave)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("キャンセル") { dismiss() }
+                }
+            }
+        }
     }
 }
 

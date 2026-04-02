@@ -426,7 +426,7 @@ private struct GrowNavCard: View {
                 Text(emoji)
                     .font(.system(size: 32))
                 Text(title)
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundColor(AppColor.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(1)

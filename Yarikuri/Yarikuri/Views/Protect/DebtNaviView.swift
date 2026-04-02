@@ -111,7 +111,7 @@ struct DebtNaviView: View {
             return "\(y)年\(m)ヶ月"
         }()
         return HStack(spacing: 0) {
-            VStack(spacing: 3) {
+            VStack(spacing: 2) {
                 Text("借金残高合計")
                     .font(.system(size: 11)).foregroundColor(AppColor.textSecondary)
                 Text(total.yen)
@@ -120,8 +120,8 @@ struct DebtNaviView: View {
                     .minimumScaleFactor(0.7).lineLimit(1)
             }
             .frame(maxWidth: .infinity)
-            Divider().frame(height: 44)
-            VStack(spacing: 3) {
+            Divider().frame(height: 36)
+            VStack(spacing: 2) {
                 Text("月返済額")
                     .font(.system(size: 11)).foregroundColor(AppColor.textSecondary)
                 Text(monthly.yen)
@@ -130,8 +130,8 @@ struct DebtNaviView: View {
                     .minimumScaleFactor(0.7).lineLimit(1)
             }
             .frame(maxWidth: .infinity)
-            Divider().frame(height: 44)
-            VStack(spacing: 3) {
+            Divider().frame(height: 36)
+            VStack(spacing: 2) {
                 Text("完済まで")
                     .font(.system(size: 11)).foregroundColor(AppColor.textSecondary)
                 Text(payoffText)
@@ -141,7 +141,7 @@ struct DebtNaviView: View {
             }
             .frame(maxWidth: .infinity)
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, 6)
         .cardStyle()
     }
 
@@ -624,42 +624,44 @@ struct DebtRepaymentChartView: View {
                 }
             }
 
-            // ── タップ時の情報表示
-            if let month = selectedMonth, let balance = selectedBalance {
-                HStack(spacing: 12) {
-                    VStack(spacing: 2) {
-                        Text("残高")
-                            .font(.system(size: 10))
-                            .foregroundColor(AppColor.textTertiary)
-                        Text(Int(balance).yen)
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(AppColor.danger)
+            // ── タップ時の情報表示（固定高さでチャートが動かないようにする）
+            ZStack {
+                if let month = selectedMonth, let balance = selectedBalance {
+                    HStack(spacing: 12) {
+                        VStack(spacing: 2) {
+                            Text("残高")
+                                .font(.system(size: 10))
+                                .foregroundColor(AppColor.textTertiary)
+                            Text(Int(balance).yen)
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(AppColor.danger)
+                        }
+                        Rectangle()
+                            .fill(AppColor.sectionBackground)
+                            .frame(width: 1, height: 32)
+                        VStack(spacing: 2) {
+                            Text("完済まで")
+                                .font(.system(size: 10))
+                                .foregroundColor(AppColor.textTertiary)
+                            let remaining = maxFutureMonths - month
+                            Text(remaining <= 0 ? "完済！" : formatMonths(remaining))
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(AppColor.primary)
+                        }
                     }
-                    Rectangle()
-                        .fill(AppColor.sectionBackground)
-                        .frame(width: 1, height: 32)
-                    VStack(spacing: 2) {
-                        Text("完済まで")
-                            .font(.system(size: 10))
-                            .foregroundColor(AppColor.textTertiary)
-                        let remaining = maxFutureMonths - month
-                        Text(remaining <= 0 ? "完済！" : formatMonths(remaining))
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(AppColor.primary)
-                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(AppColor.sectionBackground.opacity(0.8))
+                    .cornerRadius(10)
+                    .frame(maxWidth: .infinity)
+                } else {
+                    Text("グラフをタップ・ドラッグすると残高を確認できます")
+                        .font(.system(size: 11))
+                        .foregroundColor(AppColor.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(AppColor.sectionBackground.opacity(0.8))
-                .cornerRadius(10)
-                .frame(maxWidth: .infinity)
-                .transition(.opacity)
-            } else {
-                Text("グラフをタップ・ドラッグすると残高を確認できます")
-                    .font(.system(size: 11))
-                    .foregroundColor(AppColor.textTertiary)
-                    .frame(maxWidth: .infinity, alignment: .center)
             }
+            .frame(height: 50)
 
             // ── メインチャート
             Chart {
@@ -745,17 +747,13 @@ struct DebtRepaymentChartView: View {
                                     if let rawMonth: Int = proxy.value(atX: xPos) {
                                         let month = max(0, min(rawMonth, maxFutureMonths))
                                         let balance = debts.reduce(0.0) { $0 + balanceAt(debt: $1, month: month) }
-                                        withAnimation(.easeInOut(duration: 0.1)) {
-                                            selectedMonth = month
-                                            selectedBalance = balance
-                                        }
+                                        selectedMonth = month
+                                        selectedBalance = balance
                                     }
                                 }
                                 .onEnded { _ in
-                                    withAnimation(.easeOut(duration: 0.3)) {
-                                        selectedMonth = nil
-                                        selectedBalance = nil
-                                    }
+                                    selectedMonth = nil
+                                    selectedBalance = nil
                                 }
                         )
                 }
