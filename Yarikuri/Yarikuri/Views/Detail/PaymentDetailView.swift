@@ -285,7 +285,7 @@ struct PaymentDetailView: View {
     // MARK: - 支払いリスト
     private var paymentListCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("支払い一覧")
+            Text("直近の一時的な支払い")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(AppColor.textSecondary)
 
