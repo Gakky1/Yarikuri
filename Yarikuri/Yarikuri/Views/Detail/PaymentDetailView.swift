@@ -298,39 +298,66 @@ struct PaymentDetailView: View {
 
     // MARK: - 過去の支払い明細
     private var pastPaymentHistoryCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let sorted = appState.scheduledPaymentHistory.sorted {
+            if $0.year != $1.year { return $0.year > $1.year }
+            return $0.month > $1.month
+        }
+        return VStack(alignment: .leading, spacing: 12) {
             Text("過去の一時的な支払い")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(AppColor.textSecondary)
 
-            let sorted = appState.scheduledPaymentHistory.sorted {
-                if $0.year != $1.year { return $0.year > $1.year }
-                return $0.month > $1.month
-            }
-            VStack(spacing: 1) {
-                ForEach(Array(sorted.enumerated()), id: \.element.id) { index, record in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
+            VStack(spacing: 12) {
+                ForEach(sorted) { record in
+                    VStack(alignment: .leading, spacing: 0) {
+                        // 月ヘッダー
+                        HStack {
                             Text(String(record.year) + "年" + String(record.month) + "月")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(AppColor.textPrimary)
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(AppColor.textSecondary)
+                            Spacer()
+                            Text("合計 " + record.totalAmount.yen)
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(AppColor.caution)
                         }
-                        Spacer()
-                        Text(record.totalAmount.yen)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(AppColor.caution)
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(AppColor.cardBackground)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(AppColor.sectionBackground)
 
-                    if index < sorted.count - 1 {
-                        Divider().padding(.horizontal, 14)
+                        // 個別明細
+                        if record.payments.isEmpty {
+                            Text("明細なし")
+                                .font(.system(size: 13))
+                                .foregroundColor(AppColor.textTertiary)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(AppColor.cardBackground)
+                        } else {
+                            ForEach(Array(record.payments.enumerated()), id: \.element.id) { idx, payment in
+                                HStack {
+                                    Text(payment.name)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(AppColor.textPrimary)
+                                    Spacer()
+                                    Text(payment.amount.yen)
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(AppColor.textPrimary)
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                                .background(AppColor.cardBackground)
+
+                                if idx < record.payments.count - 1 {
+                                    Divider().padding(.leading, 14)
+                                }
+                            }
+                        }
                     }
+                    .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.2), lineWidth: 0.5))
                 }
             }
-            .cornerRadius(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.2), lineWidth: 0.5))
         }
         .cardStyle()
     }

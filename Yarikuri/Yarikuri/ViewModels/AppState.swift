@@ -221,21 +221,73 @@ final class AppState: ObservableObject {
 
         // デモ用：過去13ヶ月の今月の支払い履歴
         scheduledPaymentHistory = [
-            ScheduledPaymentMonthRecord(year: 2025, month:  1, totalAmount: 31_000),
-            ScheduledPaymentMonthRecord(year: 2025, month:  2, totalAmount: 24_500),
-            ScheduledPaymentMonthRecord(year: 2025, month:  3, totalAmount: 42_000),
-            ScheduledPaymentMonthRecord(year: 2025, month:  4, totalAmount: 18_500),
-            ScheduledPaymentMonthRecord(year: 2025, month:  5, totalAmount: 34_000),
-            ScheduledPaymentMonthRecord(year: 2025, month:  6, totalAmount: 12_000),
-            ScheduledPaymentMonthRecord(year: 2025, month:  7, totalAmount: 56_000),
-            ScheduledPaymentMonthRecord(year: 2025, month:  8, totalAmount: 28_000),
-            ScheduledPaymentMonthRecord(year: 2025, month:  9, totalAmount: 15_000),
-            ScheduledPaymentMonthRecord(year: 2025, month: 10, totalAmount: 38_000),
-            ScheduledPaymentMonthRecord(year: 2025, month: 11, totalAmount: 22_000),
-            ScheduledPaymentMonthRecord(year: 2025, month: 12, totalAmount: 68_000),
-            ScheduledPaymentMonthRecord(year: 2026, month:  1, totalAmount: 25_000),
-            ScheduledPaymentMonthRecord(year: 2026, month:  2, totalAmount: 19_000),
-            ScheduledPaymentMonthRecord(year: 2026, month:  3, totalAmount: 31_500),
+            ScheduledPaymentMonthRecord(year: 2025, month:  1, totalAmount: 31_000, payments: [
+                ScheduledPaymentSnapshot(name: "自動車税", amount: 18_000),
+                ScheduledPaymentSnapshot(name: "歯医者", amount: 8_000),
+                ScheduledPaymentSnapshot(name: "書籍代", amount: 5_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2025, month:  2, totalAmount: 24_500, payments: [
+                ScheduledPaymentSnapshot(name: "友達の誕生日プレゼント", amount: 5_000),
+                ScheduledPaymentSnapshot(name: "クリーニング代", amount: 4_500),
+                ScheduledPaymentSnapshot(name: "習い事発表会", amount: 15_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2025, month:  3, totalAmount: 42_000, payments: [
+                ScheduledPaymentSnapshot(name: "卒業式の衣装", amount: 22_000),
+                ScheduledPaymentSnapshot(name: "引越し関連費用", amount: 12_000),
+                ScheduledPaymentSnapshot(name: "区役所手数料", amount: 8_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2025, month:  4, totalAmount: 18_500, payments: [
+                ScheduledPaymentSnapshot(name: "健康診断", amount: 8_500),
+                ScheduledPaymentSnapshot(name: "書籍・文具", amount: 10_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2025, month:  5, totalAmount: 34_000, payments: [
+                ScheduledPaymentSnapshot(name: "自動車税", amount: 34_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2025, month:  6, totalAmount: 12_000, payments: [
+                ScheduledPaymentSnapshot(name: "梅雨対策グッズ", amount: 4_000),
+                ScheduledPaymentSnapshot(name: "父の日プレゼント", amount: 8_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2025, month:  7, totalAmount: 56_000, payments: [
+                ScheduledPaymentSnapshot(name: "夏旅行（交通費）", amount: 28_000),
+                ScheduledPaymentSnapshot(name: "夏旅行（宿泊費）", amount: 18_000),
+                ScheduledPaymentSnapshot(name: "海水浴用品", amount: 10_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2025, month:  8, totalAmount: 28_000, payments: [
+                ScheduledPaymentSnapshot(name: "帰省交通費", amount: 18_000),
+                ScheduledPaymentSnapshot(name: "お盆のお土産", amount: 10_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2025, month:  9, totalAmount: 15_000, payments: [
+                ScheduledPaymentSnapshot(name: "衣替え（秋物購入）", amount: 15_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2025, month: 10, totalAmount: 38_000, payments: [
+                ScheduledPaymentSnapshot(name: "友達の結婚式ご祝儀", amount: 30_000),
+                ScheduledPaymentSnapshot(name: "二次会費", amount: 8_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2025, month: 11, totalAmount: 22_000, payments: [
+                ScheduledPaymentSnapshot(name: "冬物コート", amount: 14_000),
+                ScheduledPaymentSnapshot(name: "タイヤ交換", amount: 8_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2025, month: 12, totalAmount: 68_000, payments: [
+                ScheduledPaymentSnapshot(name: "クリスマスプレゼント", amount: 15_000),
+                ScheduledPaymentSnapshot(name: "年末帰省交通費", amount: 22_000),
+                ScheduledPaymentSnapshot(name: "忘年会費", amount: 8_000),
+                ScheduledPaymentSnapshot(name: "家電（電子レンジ）", amount: 18_000),
+                ScheduledPaymentSnapshot(name: "年賀状・カード代", amount: 5_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2026, month:  1, totalAmount: 25_000, payments: [
+                ScheduledPaymentSnapshot(name: "お年玉", amount: 10_000),
+                ScheduledPaymentSnapshot(name: "初詣・お参り", amount: 5_000),
+                ScheduledPaymentSnapshot(name: "成人式関連", amount: 10_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2026, month:  2, totalAmount: 19_000, payments: [
+                ScheduledPaymentSnapshot(name: "バレンタインギフト", amount: 4_000),
+                ScheduledPaymentSnapshot(name: "確定申告関連", amount: 15_000),
+            ]),
+            ScheduledPaymentMonthRecord(year: 2026, month:  3, totalAmount: 31_500, payments: [
+                ScheduledPaymentSnapshot(name: "歯医者の治療費", amount: 8_000),
+                ScheduledPaymentSnapshot(name: "友達の結婚式ご祝儀", amount: 20_000),
+                ScheduledPaymentSnapshot(name: "書類代", amount: 3_500),
+            ]),
         ]
         if let data = try? JSONEncoder().encode(scheduledPaymentHistory) {
             UserDefaults.standard.set(data, forKey: "scheduledPaymentHistory")
