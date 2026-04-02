@@ -1,6 +1,13 @@
 import SwiftUI
 import Charts
 
+private struct FixedExpChartPoint: Identifiable {
+    let id = UUID()
+    let month: Int
+    let amount: Int
+    let year: Int
+}
+
 // MARK: - 固定費・サブスク整理画面
 struct FixedExpenseView: View {
     @EnvironmentObject var appState: AppState
@@ -74,39 +81,54 @@ struct FixedExpenseView: View {
     }
 
     // MARK: - 固定費推移グラフカード
-    private var chartData: [FixedExpenseMonthRecord] {
-        Array(appState.fixedExpenseHistory.sorted {
-            if $0.year != $1.year { return $0.year < $1.year }
-            return $0.month < $1.month
-        }.suffix(12))
+    private var fixedExpChartPoints: [FixedExpChartPoint] {
+        appState.fixedExpenseHistory.map {
+            FixedExpChartPoint(month: $0.month, amount: $0.totalAmount, year: $0.year)
+        }
     }
 
-    private var totalFixedExpenseAllTime: Int {
-        appState.fixedExpenseHistory.reduce(0) { $0 + $1.totalAmount }
+    private var fixedExpYears: [Int] {
+        Array(Set(appState.fixedExpenseHistory.map { $0.year })).sorted()
+    }
+
+    private func fixedExpColor(for year: Int) -> Color {
+        let colors: [Color] = [AppColor.tertiary, AppColor.primary, AppColor.safe, AppColor.caution]
+        let idx = fixedExpYears.firstIndex(of: year) ?? 0
+        return colors[idx % colors.count]
+    }
+
+    private var fixedExpYearlyTotals: [(year: Int, total: Int)] {
+        let grouped = Dictionary(grouping: appState.fixedExpenseHistory, by: { $0.year })
+        return grouped.map { (year: $0.key, total: $0.value.reduce(0) { $0 + $1.totalAmount }) }
+            .sorted { $0.year > $1.year }
     }
 
     private var fixedExpenseChartCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline) {
+            HStack(alignment: .top) {
                 Text("固定費の推移")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(AppColor.textPrimary)
                 Spacer()
-                if !chartData.isEmpty {
-                    VStack(alignment: .trailing, spacing: 1) {
-                        Text("固定費年間合計")
-                            .font(.system(size: 10))
-                            .foregroundColor(AppColor.textTertiary)
-                        Text(totalFixedExpenseAllTime.yen)
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(AppColor.primary)
+                if !fixedExpYearlyTotals.isEmpty {
+                    VStack(alignment: .trailing, spacing: 3) {
+                        ForEach(fixedExpYearlyTotals, id: \.year) { item in
+                            HStack(spacing: 5) {
+                                Text(String(item.year) + "年")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(AppColor.textTertiary)
+                                Text(item.total.yen)
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(fixedExpColor(for: item.year))
+                            }
+                        }
                     }
                 }
             }
 
-            if chartData.isEmpty {
+            if fixedExpChartPoints.isEmpty {
                 VStack(spacing: 8) {
-                    Image(systemName: "chart.bar")
+                    Image(systemName: "chart.line.uptrend.xyaxis")
                         .font(.system(size: 36))
                         .foregroundColor(AppColor.textTertiary.opacity(0.5))
                     Text("履歴データがまだありません")
@@ -116,14 +138,26 @@ struct FixedExpenseView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 140)
             } else {
-                Chart(chartData) { record in
-                    BarMark(
-                        x: .value("月", record.displayLabel),
-                        y: .value("固定費", record.totalAmount)
-                    )
-                    .foregroundStyle(AppColor.primary.gradient)
-                    .cornerRadius(4)
+                Chart {
+                    ForEach(fixedExpChartPoints) { point in
+                        LineMark(
+                            x: .value("月", point.month),
+                            y: .value("固定費", point.amount),
+                            series: .value("年", String(point.year))
+                        )
+                        .foregroundStyle(fixedExpColor(for: point.year))
+                        .lineStyle(StrokeStyle(lineWidth: 2.2))
+                        .interpolationMethod(.catmullRom)
+
+                        PointMark(
+                            x: .value("月", point.month),
+                            y: .value("固定費", point.amount)
+                        )
+                        .foregroundStyle(fixedExpColor(for: point.year))
+                        .symbolSize(28)
+                    }
                 }
+                .chartXScale(domain: 1...12)
                 .frame(height: 180)
                 .chartYAxis {
                     AxisMarks(position: .leading) { value in
@@ -138,10 +172,12 @@ struct FixedExpenseView: View {
                     }
                 }
                 .chartXAxis {
-                    AxisMarks { value in
+                    AxisMarks(values: [1, 3, 6, 9, 12]) { value in
+                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                            .foregroundStyle(Color.gray.opacity(0.18))
                         AxisValueLabel {
-                            if let s = value.as(String.self) {
-                                Text(s)
+                            if let m = value.as(Int.self) {
+                                Text("\(m)月")
                                     .font(.system(size: 9))
                                     .foregroundColor(AppColor.textTertiary)
                             }
