@@ -264,22 +264,22 @@ private struct ProtectNavCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 7) {
+            VStack(spacing: 9) {
                 Text(emoji)
-                    .font(.system(size: 32))
+                    .font(.system(size: 36))
                 Text(title)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.system(size: 17, weight: .bold))
                     .foregroundColor(AppColor.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                 Text(subtitle)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(color)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .padding(.vertical, 22)
             .padding(.horizontal, 8)
             .background(AppColor.cardBackground)
             .cornerRadius(18)
@@ -419,23 +419,23 @@ private struct GrowNavCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 7) {
+            VStack(spacing: 9) {
                 Text(emoji)
-                    .font(.system(size: 32))
+                    .font(.system(size: 36))
                 Text(title)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.system(size: 17, weight: .bold))
                     .foregroundColor(AppColor.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 Text(subtitle)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(color)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .padding(.vertical, 22)
             .padding(.horizontal, 8)
             .background(AppColor.cardBackground)
             .cornerRadius(18)
