@@ -63,6 +63,13 @@ final class AppState: ObservableObject {
             }
         }
     }
+    @Published var scheduledPaymentHistory: [ScheduledPaymentMonthRecord] = [] {
+        didSet {
+            if let data = try? JSONEncoder().encode(scheduledPaymentHistory) {
+                UserDefaults.standard.set(data, forKey: "scheduledPaymentHistory")
+            }
+        }
+    }
 
     // MARK: - UI状態
     @Published var selectedTab: Int = 0
@@ -140,6 +147,10 @@ final class AppState: ObservableObject {
            let records = try? JSONDecoder().decode([FixedExpenseMonthRecord].self, from: data) {
             fixedExpenseHistory = records
         }
+        if let data = UserDefaults.standard.data(forKey: "scheduledPaymentHistory"),
+           let records = try? JSONDecoder().decode([ScheduledPaymentMonthRecord].self, from: data) {
+            scheduledPaymentHistory = records
+        }
         resetDailyTasksIfNeeded()
     }
 
@@ -204,6 +215,26 @@ final class AppState: ObservableObject {
         ]
         if let data = try? JSONEncoder().encode(fixedExpenseHistory) {
             UserDefaults.standard.set(data, forKey: "fixedExpenseHistory")
+        }
+
+        // デモ用：過去13ヶ月の今月の支払い履歴
+        scheduledPaymentHistory = [
+            ScheduledPaymentMonthRecord(year: 2025, month:  3, totalAmount: 42_000),
+            ScheduledPaymentMonthRecord(year: 2025, month:  4, totalAmount: 18_500),
+            ScheduledPaymentMonthRecord(year: 2025, month:  5, totalAmount: 34_000),
+            ScheduledPaymentMonthRecord(year: 2025, month:  6, totalAmount: 12_000),
+            ScheduledPaymentMonthRecord(year: 2025, month:  7, totalAmount: 56_000),
+            ScheduledPaymentMonthRecord(year: 2025, month:  8, totalAmount: 28_000),
+            ScheduledPaymentMonthRecord(year: 2025, month:  9, totalAmount: 15_000),
+            ScheduledPaymentMonthRecord(year: 2025, month: 10, totalAmount: 38_000),
+            ScheduledPaymentMonthRecord(year: 2025, month: 11, totalAmount: 22_000),
+            ScheduledPaymentMonthRecord(year: 2025, month: 12, totalAmount: 68_000),
+            ScheduledPaymentMonthRecord(year: 2026, month:  1, totalAmount: 25_000),
+            ScheduledPaymentMonthRecord(year: 2026, month:  2, totalAmount: 19_000),
+            ScheduledPaymentMonthRecord(year: 2026, month:  3, totalAmount: 31_500),
+        ]
+        if let data = try? JSONEncoder().encode(scheduledPaymentHistory) {
+            UserDefaults.standard.set(data, forKey: "scheduledPaymentHistory")
         }
 
         // デモ用：過去13ヶ月の収入履歴

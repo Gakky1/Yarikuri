@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 
 // MARK: - 支払い詳細画面
 struct PaymentDetailView: View {
@@ -16,6 +17,9 @@ struct PaymentDetailView: View {
 
                 ScrollView {
                     VStack(spacing: 16) {
+                        // 支払い推移グラフ
+                        paymentChartCard
+
                         // 今月の支払い合計
                         totalCard
 
@@ -49,6 +53,82 @@ struct PaymentDetailView: View {
                 addPaymentSheet
             }
         }
+    }
+
+    // MARK: - 支払い推移グラフ
+    private var chartData: [ScheduledPaymentMonthRecord] {
+        Array(appState.scheduledPaymentHistory.sorted {
+            if $0.year != $1.year { return $0.year < $1.year }
+            return $0.month < $1.month
+        }.suffix(12))
+    }
+
+    private var paymentChartCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("支払いの推移")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(AppColor.textPrimary)
+                Spacer()
+                if let latest = chartData.last {
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text("直近の月額")
+                            .font(.system(size: 10))
+                            .foregroundColor(AppColor.textTertiary)
+                        Text(latest.totalAmount.yen)
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(AppColor.primary)
+                    }
+                }
+            }
+
+            if chartData.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "chart.bar")
+                        .font(.system(size: 36))
+                        .foregroundColor(AppColor.textTertiary.opacity(0.5))
+                    Text("履歴データがまだありません")
+                        .font(.system(size: 13))
+                        .foregroundColor(AppColor.textTertiary)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 140)
+            } else {
+                Chart(chartData) { record in
+                    BarMark(
+                        x: .value("月", record.displayLabel),
+                        y: .value("支払い", record.totalAmount)
+                    )
+                    .foregroundStyle(AppColor.caution.gradient)
+                    .cornerRadius(4)
+                }
+                .frame(height: 180)
+                .chartYAxis {
+                    AxisMarks(position: .leading) { value in
+                        AxisGridLine()
+                        AxisValueLabel {
+                            if let v = value.as(Int.self) {
+                                Text("¥\(v / 10000)万")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(AppColor.textTertiary)
+                            }
+                        }
+                    }
+                }
+                .chartXAxis {
+                    AxisMarks { value in
+                        AxisValueLabel {
+                            if let s = value.as(String.self) {
+                                Text(s)
+                                    .font(.system(size: 9))
+                                    .foregroundColor(AppColor.textTertiary)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .cardStyle()
     }
 
     // MARK: - 合計カード

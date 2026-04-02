@@ -81,12 +81,8 @@ struct FixedExpenseView: View {
         }.suffix(12))
     }
 
-    private var thisYear: Int { Calendar.current.component(.year, from: Date()) }
-
-    private var totalThisYear: Int {
-        appState.fixedExpenseHistory
-            .filter { $0.year == thisYear }
-            .reduce(0) { $0 + $1.totalAmount }
+    private var latestFixedExpenseAmount: Int? {
+        chartData.last?.totalAmount
     }
 
     private var fixedExpenseChartCard: some View {
@@ -96,12 +92,12 @@ struct FixedExpenseView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(AppColor.textPrimary)
                 Spacer()
-                if totalThisYear > 0 {
+                if let latest = latestFixedExpenseAmount {
                     VStack(alignment: .trailing, spacing: 1) {
-                        Text("\(thisYear)年 合計")
+                        Text("直近の月額")
                             .font(.system(size: 10))
                             .foregroundColor(AppColor.textTertiary)
-                        Text(totalThisYear.yen)
+                        Text(latest.yen)
                             .font(.system(size: 15, weight: .bold))
                             .foregroundColor(AppColor.primary)
                     }
