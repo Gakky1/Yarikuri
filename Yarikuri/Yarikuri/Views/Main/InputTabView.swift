@@ -54,34 +54,16 @@ private struct ExpenseInputForm: View {
     var body: some View {
         VStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 20) {
-                // 名前
-                inputBlock(label: "支出の名前") {
+                inputField(label: "支出の名前") {
                     TextField("例: 自動車税、薬代", text: $name)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(AppColor.inputBackground)
-                        .cornerRadius(12)
+                        .inputStyle()
                 }
 
-                // 金額
-                inputBlock(label: "金額") {
-                    HStack {
-                        Text("¥")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(AppColor.primary)
-                        TextField("0", text: $amountText)
-                            .keyboardType(.numberPad)
-                            .font(.system(size: 18, weight: .semibold))
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .background(AppColor.inputBackground)
-                    .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColor.primary.opacity(0.3), lineWidth: 1))
+                inputField(label: "金額") {
+                    amountField(text: $amountText)
                 }
 
-                // カテゴリ
-                inputBlock(label: "カテゴリ") {
+                inputField(label: "カテゴリ") {
                     Picker("カテゴリ", selection: $category) {
                         ForEach(PaymentCategory.allCases, id: \.rawValue) { cat in
                             Text(cat.emoji + " " + cat.displayText).tag(cat)
@@ -91,38 +73,32 @@ private struct ExpenseInputForm: View {
                     .tint(AppColor.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
+                    .padding(.vertical, 12)
                     .background(AppColor.inputBackground)
                     .cornerRadius(12)
                 }
 
-                // 支払い予定日
-                inputBlock(label: "支払い予定日") {
+                inputField(label: "支払い予定日") {
                     DatePicker("", selection: $dueDate, displayedComponents: .date)
-                        .datePickerStyle(.graphical)
+                        .datePickerStyle(.compact)
                         .environment(\.locale, Locale(identifier: "ja_JP"))
-                        .padding(.horizontal, 4)
+                        .tint(AppColor.primary)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(AppColor.inputBackground)
+                        .cornerRadius(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            .padding(16)
-            .background(AppColor.cardBackground)
-            .cornerRadius(16)
-            .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
+            .cardInputStyle()
 
-            // 保存ボタン
-            Button(action: save) {
-                HStack {
-                    Image(systemName: saved ? "checkmark.circle.fill" : "plus.circle.fill")
-                    Text(saved ? "保存しました！" : "変動費に追加")
-                        .fontWeight(.semibold)
-                }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(canSave ? AppColor.caution : AppColor.caution.opacity(0.4))
-                .cornerRadius(14)
-            }
-            .disabled(!canSave)
+            saveButton(
+                label: saved ? "保存しました！" : "変動費に追加",
+                color: AppColor.caution,
+                saved: saved,
+                action: save,
+                disabled: !canSave
+            )
         }
         .padding(.bottom, 12)
     }
@@ -131,12 +107,10 @@ private struct ExpenseInputForm: View {
 
     private func save() {
         guard let amount = Int(amountText), !name.isEmpty else { return }
-        let payment = ScheduledPayment(name: name, amount: amount, dueDate: dueDate, category: category)
-        appState.scheduledPayments.append(payment)
-        name = ""
-        amountText = ""
-        category = .other
-        dueDate = Date()
+        appState.scheduledPayments.append(
+            ScheduledPayment(name: name, amount: amount, dueDate: dueDate, category: category)
+        )
+        name = ""; amountText = ""; category = .other; dueDate = Date()
         saved = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { saved = false }
     }
@@ -160,85 +134,55 @@ private struct IncomeInputForm: View {
     var body: some View {
         VStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 20) {
-                // 年月
-                inputBlock(label: "年月") {
-                    HStack(spacing: 10) {
+                inputField(label: "年月") {
+                    HStack(spacing: 8) {
                         Picker("年", selection: $selectedYear) {
-                            ForEach(years, id: \.self) { year in
-                                Text(String(year) + "年").tag(year)
-                            }
+                            ForEach(years, id: \.self) { Text(String($0) + "年").tag($0) }
                         }
                         .pickerStyle(.menu)
                         .tint(AppColor.primary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .background(AppColor.inputBackground)
-                        .cornerRadius(10)
-
-                        Picker("月", selection: $selectedMonth) {
-                            ForEach(1...12, id: \.self) { month in
-                                Text("\(month)月").tag(month)
-                            }
-                        }
-                        .pickerStyle(.menu)
-                        .tint(AppColor.primary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .background(AppColor.inputBackground)
-                        .cornerRadius(10)
-                    }
-                }
-
-                // 金額
-                inputBlock(label: "手取り収入") {
-                    HStack {
-                        Text("¥")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(AppColor.safe)
-                        TextField("0", text: $amountText)
-                            .keyboardType(.numberPad)
-                            .font(.system(size: 18, weight: .semibold))
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .background(AppColor.inputBackground)
-                    .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColor.safe.opacity(0.4), lineWidth: 1))
-                }
-
-                // メモ
-                inputBlock(label: "メモ（任意）") {
-                    TextField("例: ボーナス、副業収入", text: $noteText)
+                        .frame(maxWidth: .infinity)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
                         .background(AppColor.inputBackground)
                         .cornerRadius(12)
-                }
-            }
-            .padding(16)
-            .background(AppColor.cardBackground)
-            .cornerRadius(16)
-            .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
 
-            // 保存ボタン
-            Button(action: save) {
-                HStack {
-                    Image(systemName: saved ? "checkmark.circle.fill" : "plus.circle.fill")
-                    Text(saved ? "保存しました！" : "収入を記録")
-                        .fontWeight(.semibold)
+                        Picker("月", selection: $selectedMonth) {
+                            ForEach(1...12, id: \.self) { Text("\($0)月").tag($0) }
+                        }
+                        .pickerStyle(.menu)
+                        .tint(AppColor.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(AppColor.inputBackground)
+                        .cornerRadius(12)
+                    }
                 }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(canSave ? AppColor.safe : AppColor.safe.opacity(0.4))
-                .cornerRadius(14)
+
+                inputField(label: "手取り収入") {
+                    amountField(text: $amountText)
+                }
+
+                inputField(label: "メモ（任意）") {
+                    TextField("例: ボーナス、副業収入", text: $noteText)
+                        .inputStyle()
+                }
             }
-            .disabled(!canSave)
+            .cardInputStyle()
+
+            saveButton(
+                label: saved ? "保存しました！" : "収入を記録",
+                color: AppColor.safe,
+                saved: saved,
+                action: save,
+                disabled: !canSave
+            )
         }
         .padding(.bottom, 12)
     }
 
-    private var canSave: Bool { Int(amountText) != nil && !amountText.isEmpty }
+    private var canSave: Bool { !(Int(amountText) == nil || amountText.isEmpty) }
 
     private func save() {
         guard let amount = Int(amountText), amount > 0 else { return }
@@ -246,22 +190,73 @@ private struct IncomeInputForm: View {
             appState.incomeHistory[idx].amount = amount
             appState.incomeHistory[idx].note = noteText
         } else {
-            let record = IncomeRecord(year: selectedYear, month: selectedMonth, amount: amount, note: noteText)
-            appState.incomeHistory.append(record)
+            appState.incomeHistory.append(IncomeRecord(year: selectedYear, month: selectedMonth, amount: amount, note: noteText))
         }
-        amountText = ""
-        noteText = ""
+        amountText = ""; noteText = ""
         saved = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { saved = false }
     }
 }
 
-// MARK: - ヘルパー
-private func inputBlock<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
+// MARK: - 共通部品
+private func inputField<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
     VStack(alignment: .leading, spacing: 6) {
         Text(label)
-            .font(.caption)
+            .font(.system(size: 12, weight: .medium))
             .foregroundColor(AppColor.textSecondary)
         content()
+    }
+}
+
+private func amountField(text: Binding<String>) -> some View {
+    HStack(spacing: 4) {
+        Text("¥")
+            .font(.system(size: 18, weight: .bold))
+            .foregroundColor(AppColor.primary)
+        TextField("0", text: text)
+            .keyboardType(.numberPad)
+            .font(.system(size: 18, weight: .semibold))
+    }
+    .padding(.horizontal, 14)
+    .padding(.vertical, 12)
+    .background(AppColor.inputBackground)
+    .cornerRadius(12)
+    .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColor.primary.opacity(0.3), lineWidth: 1))
+}
+
+private func saveButton(label: String, color: Color, saved: Bool, action: @escaping () -> Void, disabled: Bool) -> some View {
+    Button(action: action) {
+        HStack(spacing: 8) {
+            Image(systemName: saved ? "checkmark.circle.fill" : "plus.circle.fill")
+                .font(.system(size: 16))
+            Text(label)
+                .fontWeight(.semibold)
+        }
+        .foregroundColor(.white)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(disabled ? color.opacity(0.4) : color)
+        .cornerRadius(14)
+    }
+    .disabled(disabled)
+}
+
+// MARK: - View modifier
+private extension View {
+    func inputStyle() -> some View {
+        self
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(AppColor.inputBackground)
+            .cornerRadius(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    func cardInputStyle() -> some View {
+        self
+            .padding(16)
+            .background(AppColor.cardBackground)
+            .cornerRadius(16)
+            .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
     }
 }
