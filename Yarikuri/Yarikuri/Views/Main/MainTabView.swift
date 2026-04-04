@@ -9,18 +9,18 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            InputTabView()
+            NavigationStack { HomeView() }
                 .tag(0)
+                .tabItem { Image(systemName: "house") }
+            InputTabView()
+                .tag(1)
                 .tabItem { Image(systemName: "plus.circle") }
             NavigationStack { ProtectScreenView() }
-                .tag(1)
+                .tag(2)
                 .tabItem { Image(systemName: "chart.line.downtrend.xyaxis") }
             NavigationStack { GrowScreenView() }
-                .tag(2)
-                .tabItem { Image(systemName: "chart.line.uptrend.xyaxis") }
-            NavigationStack { HomeView() }
                 .tag(3)
-                .tabItem { Image(systemName: "house") }
+                .tabItem { Image(systemName: "chart.line.uptrend.xyaxis") }
         }
         .background(AppColor.background)
         .overlay {
