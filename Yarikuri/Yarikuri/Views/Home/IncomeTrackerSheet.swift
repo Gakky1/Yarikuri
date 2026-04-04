@@ -75,6 +75,9 @@ struct IncomeTrackerSheet: View {
                     // ── グラフ ──────────────────────────
                     chartSection
 
+                    // ── 入力フォーム ──────────────────
+                    inputSection
+
                     // ── 履歴 ──────────────────────────
                     if !appState.incomeHistory.isEmpty {
                         historySection
