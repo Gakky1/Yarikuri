@@ -197,17 +197,10 @@ struct ProtectScreenView: View {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         ProtectNavCard(
                             emoji: "📋",
-                            title: "今月の固定費",
+                            title: "固定費",
                             subtitle: appState.fixedExpenses.isEmpty ? "未登録" : appState.totalFixedExpenses.yen,
                             color: AppColor.primary,
                             action: { showFixedExpense = true }
-                        )
-                        ProtectNavCard(
-                            emoji: "💳",
-                            title: "借金返済ナビ",
-                            subtitle: appState.debts.isEmpty ? "借入なし" : "月返済額 \(appState.debts.reduce(0){ $0 + $1.monthlyPayment }.yen)",
-                            color: AppColor.danger,
-                            action: { showDebtNavi = true }
                         )
                         ProtectNavCard(
                             emoji: "📅",
@@ -215,6 +208,13 @@ struct ProtectScreenView: View {
                             subtitle: appState.scheduledPaymentsThisMonth.isEmpty ? "支払いなし" : appState.totalScheduledPayments.yen,
                             color: AppColor.caution,
                             action: { showPayment = true }
+                        )
+                        ProtectNavCard(
+                            emoji: "💳",
+                            title: "借金返済ナビ",
+                            subtitle: appState.debts.isEmpty ? "借入なし" : "月返済額 \(appState.debts.reduce(0){ $0 + $1.monthlyPayment }.yen)",
+                            color: AppColor.danger,
+                            action: { showDebtNavi = true }
                         )
                         ProtectNavCard(
                             emoji: "🤝",
