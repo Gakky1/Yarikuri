@@ -441,7 +441,7 @@ final class AppState: ObservableObject {
             items.append(UpcomingPaymentItem(id: fe.id, name: fe.name, amount: fe.amount, dueDate: dueDate, emoji: fe.category.emoji, kind: .fixed))
         }
 
-        return items.sorted { $0.dueDate < $1.dueDate }.prefix(5).map { $0 }
+        return items.sorted { $0.dueDate < $1.dueDate }.prefix(3).map { $0 }
     }
 
     // MARK: - 今日やること（優先順位順）

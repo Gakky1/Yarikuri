@@ -14,22 +14,8 @@ struct UpcomingPaymentsListView: View {
                         if allItems.isEmpty {
                             emptyView
                         } else {
-                            // 固定費セクション
-                            let fixedItems = allItems.filter { $0.kind == .fixed }
-                            if !fixedItems.isEmpty {
-                                sectionHeader(title: "固定費", icon: "calendar.badge.clock", color: AppColor.primary, count: fixedItems.count)
-                                ForEach(fixedItems) { item in
-                                    UpcomingDetailRow(item: item)
-                                }
-                            }
-
-                            // 変動費セクション
-                            let variableItems = allItems.filter { $0.kind == .variable }
-                            if !variableItems.isEmpty {
-                                sectionHeader(title: "変動費", icon: "creditcard", color: AppColor.secondary, count: variableItems.count)
-                                ForEach(variableItems) { item in
-                                    UpcomingDetailRow(item: item)
-                                }
+                            ForEach(allItems) { item in
+                                UpcomingDetailRow(item: item)
                             }
                         }
 
@@ -78,22 +64,6 @@ struct UpcomingPaymentsListView: View {
         }
 
         return items.sorted { $0.dueDate < $1.dueDate }
-    }
-
-    private func sectionHeader(title: String, icon: String, color: Color, count: Int) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(color)
-            Text(title)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(AppColor.textSecondary)
-            Spacer()
-            Text("\(count)件")
-                .font(.system(size: 12))
-                .foregroundColor(AppColor.textTertiary)
-        }
-        .padding(.top, 4)
     }
 
     private var emptyView: some View {
