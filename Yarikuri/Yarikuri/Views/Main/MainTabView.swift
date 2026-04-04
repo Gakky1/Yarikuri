@@ -11,19 +11,19 @@ struct MainTabView: View {
         TabView(selection: $selectedTab) {
             InputTabView()
                 .tag(0)
-                .tabItem { Label("入力", systemImage: "plus.circle") }
+                .tabItem { Image(systemName: "plus.circle") }
             NavigationStack { ProtectScreenView() }
                 .tag(1)
-                .tabItem { Label("支出", systemImage: "chart.line.downtrend.xyaxis") }
+                .tabItem { Image(systemName: "chart.line.downtrend.xyaxis") }
             NavigationStack { GrowScreenView() }
                 .tag(2)
-                .tabItem { Label("収入", systemImage: "chart.line.uptrend.xyaxis") }
+                .tabItem { Image(systemName: "chart.line.uptrend.xyaxis") }
             NavigationStack { HomeView() }
                 .tag(3)
-                .tabItem { Label("ホーム", systemImage: "house") }
+                .tabItem { Image(systemName: "house") }
             NavigationStack { CommunityScreenView() }
                 .tag(4)
-                .tabItem { Label("みんな", systemImage: "person.2") }
+                .tabItem { Image(systemName: "person.2") }
         }
         .background(AppColor.background)
         .overlay {

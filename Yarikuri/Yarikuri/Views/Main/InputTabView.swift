@@ -8,31 +8,35 @@ struct InputTabView: View {
     enum InputTab { case expense, income }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                AppColor.background.ignoresSafeArea()
-                VStack(spacing: 0) {
+        ZStack {
+            AppColor.background.ignoresSafeArea()
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 16) {
+                    // ヘッダー
+                    HStack {
+                        Text("入力")
+                            .font(.system(size: 26, weight: .bold))
+                            .foregroundColor(AppColor.textPrimary)
+                        Spacer()
+                    }
+                    .padding(.top, 8)
+
                     // セグメント切り替え
                     Picker("", selection: $selectedInputTab) {
                         Text("支出").tag(InputTab.expense)
                         Text("収入").tag(InputTab.income)
                     }
                     .pickerStyle(.segmented)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 12)
-                    .padding(.bottom, 8)
 
-                    ScrollView {
-                        if selectedInputTab == .expense {
-                            ExpenseInputForm()
-                        } else {
-                            IncomeInputForm()
-                        }
+                    if selectedInputTab == .expense {
+                        ExpenseInputForm()
+                    } else {
+                        IncomeInputForm()
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
             }
-            .navigationTitle("入力")
-            .navigationBarTitleDisplayMode(.large)
         }
     }
 }
@@ -120,8 +124,7 @@ private struct ExpenseInputForm: View {
             }
             .disabled(!canSave)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.bottom, 12)
     }
 
     private var canSave: Bool { !name.isEmpty && Int(amountText) != nil }
@@ -232,8 +235,7 @@ private struct IncomeInputForm: View {
             }
             .disabled(!canSave)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.bottom, 12)
     }
 
     private var canSave: Bool { Int(amountText) != nil && !amountText.isEmpty }
