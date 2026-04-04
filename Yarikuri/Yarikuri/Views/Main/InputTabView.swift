@@ -241,52 +241,54 @@ private struct ExpenseInputForm: View {
 private struct IncomeInputForm: View {
     @EnvironmentObject var appState: AppState
 
-    @State private var selectedYear: Int = Calendar.current.component(.year, from: Date())
-    @State private var selectedMonth: Int = Calendar.current.component(.month, from: Date())
+    @State private var incomeName = ""
     @State private var amountText = ""
+    @State private var category: IncomeCategory = .salary
+    @State private var selectedDate = Date()
     @State private var noteText = ""
     @State private var saved = false
-
-    private var years: [Int] {
-        let current = Calendar.current.component(.year, from: Date())
-        return Array((current - 5)...current).reversed()
-    }
 
     var body: some View {
         VStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 20) {
-                inputField(label: "年月") {
-                    HStack(spacing: 8) {
-                        Picker("年", selection: $selectedYear) {
-                            ForEach(years, id: \.self) { Text(String($0) + "年").tag($0) }
-                        }
-                        .pickerStyle(.menu)
-                        .tint(AppColor.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(AppColor.inputBackground)
-                        .cornerRadius(12)
-
-                        Picker("月", selection: $selectedMonth) {
-                            ForEach(1...12, id: \.self) { Text("\($0)月").tag($0) }
-                        }
-                        .pickerStyle(.menu)
-                        .tint(AppColor.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(AppColor.inputBackground)
-                        .cornerRadius(12)
-                    }
+                inputField(label: "収入の名前") {
+                    TextField("例: 4月分給与、ボーナス", text: $incomeName)
+                        .inputStyle()
                 }
 
-                inputField(label: "手取り収入") {
+                inputField(label: "手取り金額") {
                     amountField(text: $amountText)
                 }
 
+                inputField(label: "カテゴリ") {
+                    Picker("カテゴリ", selection: $category) {
+                        ForEach(IncomeCategory.allCases, id: \.rawValue) { cat in
+                            Text(cat.emoji + " " + cat.displayText).tag(cat)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .tint(AppColor.safe)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(AppColor.inputBackground)
+                    .cornerRadius(12)
+                }
+
+                inputField(label: "年月日") {
+                    DatePicker("", selection: $selectedDate, displayedComponents: .date)
+                        .datePickerStyle(.compact)
+                        .environment(\.locale, Locale(identifier: "ja_JP"))
+                        .tint(AppColor.safe)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(AppColor.inputBackground)
+                        .cornerRadius(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
                 inputField(label: "メモ（任意）") {
-                    TextField("例: ボーナス、副業収入", text: $noteText)
+                    TextField("例: 残業代含む、副業分", text: $noteText)
                         .inputStyle()
                 }
             }
@@ -303,17 +305,29 @@ private struct IncomeInputForm: View {
         .padding(.bottom, 12)
     }
 
-    private var canSave: Bool { !(Int(amountText) == nil || amountText.isEmpty) }
+    private var canSave: Bool { !amountText.isEmpty && Int(amountText) != nil }
 
     private func save() {
         guard let amount = Int(amountText), amount > 0 else { return }
-        if let idx = appState.incomeHistory.firstIndex(where: { $0.year == selectedYear && $0.month == selectedMonth }) {
-            appState.incomeHistory[idx].amount = amount
-            appState.incomeHistory[idx].note = noteText
+        let cal = Calendar.current
+        let year  = cal.component(.year,  from: selectedDate)
+        let month = cal.component(.month, from: selectedDate)
+        let day   = cal.component(.day,   from: selectedDate)
+        if let idx = appState.incomeHistory.firstIndex(where: { $0.year == year && $0.month == month }) {
+            appState.incomeHistory[idx].amount   = amount
+            appState.incomeHistory[idx].name     = incomeName
+            appState.incomeHistory[idx].category = category
+            appState.incomeHistory[idx].day      = day
+            appState.incomeHistory[idx].note     = noteText
         } else {
-            appState.incomeHistory.append(IncomeRecord(year: selectedYear, month: selectedMonth, amount: amount, note: noteText))
+            appState.incomeHistory.append(
+                IncomeRecord(year: year, month: month, day: day,
+                             amount: amount, name: incomeName,
+                             category: category, note: noteText)
+            )
         }
-        amountText = ""; noteText = ""
+        incomeName = ""; amountText = ""; category = .salary
+        selectedDate = Date(); noteText = ""
         saved = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { saved = false }
     }
