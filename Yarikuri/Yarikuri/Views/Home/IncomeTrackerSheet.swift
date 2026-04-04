@@ -75,9 +75,6 @@ struct IncomeTrackerSheet: View {
                     // ── グラフ ──────────────────────────
                     chartSection
 
-                    // ── 入力フォーム ──────────────────
-                    inputSection
-
                     // ── 履歴 ──────────────────────────
                     if !appState.incomeHistory.isEmpty {
                         historySection
@@ -290,21 +287,36 @@ struct IncomeTrackerSheet: View {
             } else {
                 Chart {
                     ForEach(incomeChartPoints) { point in
+                        AreaMark(
+                            x: .value("月", point.month),
+                            yStart: .value("収入", 0),
+                            yEnd: .value("収入", point.amount),
+                            series: .value("年", String(point.year))
+                        )
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [incomeColor(for: point.year).opacity(0.22), incomeColor(for: point.year).opacity(0.0)],
+                                startPoint: .top, endPoint: .bottom
+                            )
+                        )
+                        .interpolationMethod(.catmullRom)
+
                         LineMark(
                             x: .value("月", point.month),
                             y: .value("収入", point.amount),
                             series: .value("年", String(point.year))
                         )
                         .foregroundStyle(incomeColor(for: point.year))
-                        .lineStyle(StrokeStyle(lineWidth: 2.2))
+                        .lineStyle(StrokeStyle(lineWidth: 2.5))
                         .interpolationMethod(.catmullRom)
+                        .shadow(color: incomeColor(for: point.year).opacity(0.35), radius: 4, x: 0, y: 2)
 
                         PointMark(
                             x: .value("月", point.month),
                             y: .value("収入", point.amount)
                         )
                         .foregroundStyle(incomeColor(for: point.year))
-                        .symbolSize(28)
+                        .symbolSize(32)
                     }
                     if let month = selectedChartMonth {
                         RuleMark(x: .value("月", month))

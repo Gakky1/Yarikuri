@@ -174,21 +174,36 @@ struct PaymentDetailView: View {
             } else {
                 Chart {
                     ForEach(paymentChartPoints) { point in
+                        AreaMark(
+                            x: .value("月", point.month),
+                            yStart: .value("支払い", 0),
+                            yEnd: .value("支払い", point.amount),
+                            series: .value("年", String(point.year))
+                        )
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [paymentColor(for: point.year).opacity(0.22), paymentColor(for: point.year).opacity(0.0)],
+                                startPoint: .top, endPoint: .bottom
+                            )
+                        )
+                        .interpolationMethod(.catmullRom)
+
                         LineMark(
                             x: .value("月", point.month),
                             y: .value("支払い", point.amount),
                             series: .value("年", String(point.year))
                         )
                         .foregroundStyle(paymentColor(for: point.year))
-                        .lineStyle(StrokeStyle(lineWidth: 2.2))
+                        .lineStyle(StrokeStyle(lineWidth: 2.5))
                         .interpolationMethod(.catmullRom)
+                        .shadow(color: paymentColor(for: point.year).opacity(0.35), radius: 4, x: 0, y: 2)
 
                         PointMark(
                             x: .value("月", point.month),
                             y: .value("支払い", point.amount)
                         )
                         .foregroundStyle(paymentColor(for: point.year))
-                        .symbolSize(28)
+                        .symbolSize(32)
                     }
                     if let month = selectedChartMonth {
                         RuleMark(x: .value("月", month))

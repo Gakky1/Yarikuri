@@ -180,21 +180,36 @@ struct FixedExpenseView: View {
             } else {
                 Chart {
                     ForEach(fixedExpChartPoints) { point in
+                        AreaMark(
+                            x: .value("月", point.month),
+                            yStart: .value("固定費", 0),
+                            yEnd: .value("固定費", point.amount),
+                            series: .value("年", String(point.year))
+                        )
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [fixedExpColor(for: point.year).opacity(0.22), fixedExpColor(for: point.year).opacity(0.0)],
+                                startPoint: .top, endPoint: .bottom
+                            )
+                        )
+                        .interpolationMethod(.catmullRom)
+
                         LineMark(
                             x: .value("月", point.month),
                             y: .value("固定費", point.amount),
                             series: .value("年", String(point.year))
                         )
                         .foregroundStyle(fixedExpColor(for: point.year))
-                        .lineStyle(StrokeStyle(lineWidth: 2.2))
+                        .lineStyle(StrokeStyle(lineWidth: 2.5))
                         .interpolationMethod(.catmullRom)
+                        .shadow(color: fixedExpColor(for: point.year).opacity(0.35), radius: 4, x: 0, y: 2)
 
                         PointMark(
                             x: .value("月", point.month),
                             y: .value("固定費", point.amount)
                         )
                         .foregroundStyle(fixedExpColor(for: point.year))
-                        .symbolSize(28)
+                        .symbolSize(32)
                     }
                     if let month = selectedChartMonth {
                         RuleMark(x: .value("月", month))
