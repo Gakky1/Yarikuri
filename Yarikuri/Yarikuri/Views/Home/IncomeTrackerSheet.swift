@@ -67,13 +67,13 @@ struct IncomeTrackerSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // ── グラフ（常に表示） ──────────────
-                    chartSection
-
-                    // ── サマリーカード ──────────────────
+                    // ── サマリーカード（最上部） ────────
                     if !appState.incomeHistory.isEmpty {
                         summarySection
                     }
+
+                    // ── グラフ ──────────────────────────
+                    chartSection
 
                     // ── 入力フォーム ──────────────────
                     inputSection
@@ -189,41 +189,29 @@ struct IncomeTrackerSheet: View {
 
     // MARK: - サマリー
     private var summarySection: some View {
-        HStack(spacing: 12) {
-            summaryCard(
-                label: "今年の合計",
-                value: "¥\(totalThisYear.formattedYen)",
-                icon: "calendar",
-                color: AppColor.primary
-            )
-            summaryCard(
-                label: "月平均",
-                value: "¥\(averageMonthly.formattedYen)",
-                icon: "chart.bar.fill",
-                color: Color.orange
-            )
-        }
-    }
-
-    private func summaryCard(label: String, value: String, icon: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 12))
-                    .foregroundColor(color)
-                Text(label)
-                    .font(.system(size: 12))
-                    .foregroundColor(AppColor.textTertiary)
+        HStack(spacing: 0) {
+            VStack(spacing: 2) {
+                Text("今年の合計")
+                    .font(.system(size: 11)).foregroundColor(AppColor.textSecondary)
+                Text(totalThisYear.yen)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(AppColor.safe)
+                    .minimumScaleFactor(0.7).lineLimit(1)
             }
-            Text(value)
-                .font(.system(size: 20, weight: .bold))
-                .foregroundColor(AppColor.textPrimary)
+            .frame(maxWidth: .infinity)
+            Divider().frame(height: 36)
+            VStack(spacing: 2) {
+                Text("月平均")
+                    .font(.system(size: 11)).foregroundColor(AppColor.textSecondary)
+                Text(averageMonthly.yen)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(AppColor.primary)
+                    .minimumScaleFactor(0.7).lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(AppColor.cardBackground)
-        .cornerRadius(14)
-        .shadow(color: AppColor.shadowColor, radius: 3, x: 0, y: 1)
+        .padding(.vertical, 6)
+        .cardStyle()
     }
 
     private var thisYear: Int { Calendar.current.component(.year, from: Date()) }
