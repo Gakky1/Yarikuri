@@ -405,13 +405,43 @@ final class AppState: ObservableObject {
         return scheduledPayments.filter { $0.dueDate >= monthStart && $0.dueDate < monthEnd }
     }
 
-    // MARK: - 直近3件の支払い予定
+    // MARK: - 直近3件の支払い予定（変動費のみ、後方互換用）
     var upcomingPayments: [ScheduledPayment] {
         scheduledPayments
             .filter { !$0.isPaid && $0.dueDate >= Date().startOfDay }
             .sorted { $0.dueDate < $1.dueDate }
             .prefix(3)
             .map { $0 }
+    }
+
+    // MARK: - 固定費＋変動費を合わせた直近支払い一覧
+    var upcomingCombinedPayments: [UpcomingPaymentItem] {
+        var items: [UpcomingPaymentItem] = []
+
+        // 変動費
+        let variable = scheduledPayments
+            .filter { !$0.isPaid && $0.dueDate >= Date().startOfDay }
+            .map { UpcomingPaymentItem(id: $0.id, name: $0.name, amount: $0.amount, dueDate: $0.dueDate, emoji: $0.category.emoji, kind: .variable) }
+        items.append(contentsOf: variable)
+
+        // 固定費（billingDayがある場合のみ）
+        let calendar = Calendar.current
+        let today = Date()
+        let currentDay = calendar.component(.day, from: today)
+
+        for fe in fixedExpenses {
+            guard let billingDay = fe.billingDay else { continue }
+            // 今月の引き落とし日がまだなら今月、過ぎていれば来月
+            let base = billingDay >= currentDay ? today
+                     : (calendar.date(byAdding: .month, value: 1, to: today) ?? today)
+            var comps = calendar.dateComponents([.year, .month], from: base)
+            let maxDay = calendar.range(of: .day, in: .month, for: base)?.count ?? billingDay
+            comps.day = min(billingDay, maxDay)
+            guard let dueDate = calendar.date(from: comps) else { continue }
+            items.append(UpcomingPaymentItem(id: fe.id, name: fe.name, amount: fe.amount, dueDate: dueDate, emoji: fe.category.emoji, kind: .fixed))
+        }
+
+        return items.sorted { $0.dueDate < $1.dueDate }.prefix(5).map { $0 }
     }
 
     // MARK: - 今日やること（優先順位順）

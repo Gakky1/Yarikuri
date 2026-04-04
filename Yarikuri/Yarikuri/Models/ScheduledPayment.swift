@@ -110,6 +110,20 @@ enum UrgencyLevel {
     }
 }
 
+// MARK: - 固定費＋変動費を統合した「次の支払い」アイテム
+struct UpcomingPaymentItem: Identifiable {
+    enum Kind { case fixed, variable }
+
+    let id: UUID
+    let name: String
+    let amount: Int
+    let dueDate: Date
+    let emoji: String
+    let kind: Kind
+
+    var daysUntil: Int { Date().daysUntil(dueDate) }
+}
+
 // MARK: - ダミーデータ
 extension ScheduledPayment {
     static var sampleData: [ScheduledPayment] {
