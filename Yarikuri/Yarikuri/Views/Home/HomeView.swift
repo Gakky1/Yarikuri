@@ -56,7 +56,7 @@ struct HomeView: View {
                 .padding(.top, 12)
             }
         }
-        .sheet(isPresented: $showPaymentDetail)    { PaymentDetailView() }
+        .sheet(isPresented: $showPaymentDetail)    { UpcomingPaymentsListView().environmentObject(appState) }
         .sheet(isPresented: $showTaskDetail)       { TodayTaskDetailView() }
         .sheet(isPresented: $showBudgetBreakdown)  {
             BudgetBreakdownSheet()
