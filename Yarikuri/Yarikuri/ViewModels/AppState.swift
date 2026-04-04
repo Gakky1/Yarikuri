@@ -552,23 +552,23 @@ final class AppState: ObservableObject {
         let n = nickname
         // 連続ログインを優先
         switch consecutiveLoginDays {
-        case 30...: return "\(n)さん、毎日ありがとう。ずっと一緒にいるよ"
-        case 14...: return "2週間連続！もうすっかり習慣だね\(n)さん"
-        case 7...:  return "1週間連続！すごいよ\(n)さん！"
-        case 3...:  return "\(consecutiveLoginDays)日連続！いい調子だよ"
+        case 30...: return "\(n)さん、毎日ありがとうりん。ずっと一緒にいるよりん"
+        case 14...: return "2週間連続！\(n)さん、もうすっかり習慣だりん"
+        case 7...:  return "1週間連続！\(n)さん、すごいよりん！"
+        case 3...:  return "\(consecutiveLoginDays)日連続！いい調子だよりん"
         default: break
         }
         // 夢が設定されていれば、タスク完了数に応じて夢参照コメントを挟む
         if let dream = userProfile?.dreamText, !dream.isEmpty, completedTaskIds.count % 3 == 0 {
-            return "\(dream)のために今日も一歩！\(n)さん"
+            return "\(n)さん、\(dream)のために今日も一歩りん！"
         }
         // 関係性ステージで変化
         switch relationshipStage {
-        case 1: return "はじめまして！一緒にやっていこうね"
-        case 2: return "少しずつ変わってきてるの、わかるよ"
-        case 3: return "前よりずっと頼もしくなったね\(n)さん"
-        case 4: return "もうすっかりやりくり上手だよ"
-        default: return "長い付き合いだね。ずっと一緒にいるよ"
+        case 1: return "はじめましてりん！一緒にやっていこうりん"
+        case 2: return "少しずつ変わってきてるの、わかるよりん"
+        case 3: return "\(n)さん、前よりずっと頼もしくなったりん"
+        case 4: return "もうすっかりやりくり上手だよりん"
+        default: return "長い付き合いだりん。ずっと一緒にいるよりん"
         }
     }
 
@@ -757,22 +757,22 @@ final class AppState: ObservableObject {
         switch level {
         case .safe:
             return TodayMessage(
-                greeting: "今日もお疲れさまです",
-                message: "今月は予算に余裕があります。\nこの調子で続けましょう！",
+                greeting: "今日もお疲れさまりん",
+                message: "今月は予算に余裕があるりん。\nこの調子で続けていこうりん！",
                 emoji: "✨",
                 mood: .positive
             )
         case .caution:
             return TodayMessage(
-                greeting: "今日もがんばりましょう",
-                message: "予算は残り少なめです。\n小さな節約を積み重ねていきましょう。",
+                greeting: "今日もがんばろうりん",
+                message: "予算は残り少なめりん。\n小さな節約を積み重ねていこうりん。",
                 emoji: "🌱",
                 mood: .neutral
             )
         case .danger:
             return TodayMessage(
-                greeting: "一緒に乗り切りましょう",
-                message: "今月はちょっと厳しめですね。\n支出を確認してみましょう。",
+                greeting: "一緒に乗り切ろうりん",
+                message: "今月はちょっと厳しめりん。\n支出を確認してみようりん。",
                 emoji: "🤝",
                 mood: .careful
             )
