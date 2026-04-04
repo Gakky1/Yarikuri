@@ -35,6 +35,9 @@ struct HomeView: View {
                     // やりくりん
                     MascotCard()
 
+                    // 連続ログインストリーク
+                    LoginStreakBanner()
+
                     // 残予算・給料日まで・1日の目安
                     quickStatsRow
 
@@ -322,18 +325,6 @@ struct MascotCard: View {
                             .foregroundColor(AppColor.primary)
                     }
 
-                    // 連続ログイン日数バッジ
-                    HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .font(.system(size: 10))
-                            .foregroundColor(.orange)
-                        Text("連続\(appState.consecutiveLoginDays)日ログイン中！")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.orange)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                    }
-
                     // やりくりんのひとこと（関係性ステージ・連続日数で変化）
                     HStack(spacing: 4) {
                         Image(systemName: "bubble.left.fill")
@@ -371,6 +362,98 @@ struct MascotCard: View {
         .shadow(color: AppColor.shadowColor, radius: 6, x: 0, y: 3)
         .onAppear {
             withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) { glowPulse = true }
+        }
+    }
+}
+
+// MARK: - 連続ログインストリークバナー
+struct LoginStreakBanner: View {
+    @EnvironmentObject var appState: AppState
+    @State private var flamePulse = false
+
+    private var days: Int { appState.consecutiveLoginDays }
+
+    // マイルストーン: 3, 7, 14, 30日
+    private let milestones = [3, 7, 14, 30]
+
+    private var nextMilestone: Int? {
+        milestones.first { $0 > days }
+    }
+
+    private var daysToNext: Int? {
+        nextMilestone.map { $0 - days }
+    }
+
+    var body: some View {
+        HStack(spacing: 16) {
+            // 炎アイコン + 日数
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.orange.opacity(0.25), Color.red.opacity(0.12)],
+                            startPoint: .topLeading, endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 64, height: 64)
+                    .scaleEffect(flamePulse ? 1.08 : 0.95)
+                VStack(spacing: 0) {
+                    Text("🔥")
+                        .font(.system(size: 26))
+                    Text("\(days)")
+                        .font(.system(size: 20, weight: .black))
+                        .foregroundColor(.orange)
+                }
+            }
+
+            // テキスト情報
+            VStack(alignment: .leading, spacing: 4) {
+                Text("連続\(days)日ログイン中！")
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundColor(Color.orange)
+
+                if let remaining = daysToNext, let next = nextMilestone {
+                    Text("次の目標（\(next)日）まであと\(remaining)日")
+                        .font(.system(size: 12))
+                        .foregroundColor(AppColor.textSecondary)
+                } else {
+                    Text("すごい！30日以上継続中りん🎉")
+                        .font(.system(size: 12))
+                        .foregroundColor(AppColor.textSecondary)
+                }
+
+                // マイルストーンドット
+                HStack(spacing: 6) {
+                    ForEach(milestones, id: \.self) { m in
+                        Circle()
+                            .fill(days >= m ? Color.orange : AppColor.primary.opacity(0.15))
+                            .frame(width: 8, height: 8)
+                    }
+                }
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.orange.opacity(0.12), Color.yellow.opacity(0.07)],
+                        startPoint: .leading, endPoint: .trailing
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.orange.opacity(0.25), lineWidth: 1)
+        )
+        .shadow(color: Color.orange.opacity(0.12), radius: 6, x: 0, y: 2)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
+                flamePulse = true
+            }
         }
     }
 }
