@@ -12,7 +12,7 @@ struct MainTabView: View {
             NavigationStack { HomeView() }
                 .tag(0)
                 .tabItem { Image(systemName: "house") }
-            NavigationStack { InputTabView() }
+            InputTabView()
                 .tag(1)
                 .tabItem { Image(systemName: "plus.circle") }
             NavigationStack { ProtectScreenView() }

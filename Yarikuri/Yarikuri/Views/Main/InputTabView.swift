@@ -37,7 +37,6 @@ struct InputTabView: View {
                 .padding(.horizontal, 16)
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
     }
 }
 
