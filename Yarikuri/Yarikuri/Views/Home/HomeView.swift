@@ -24,19 +24,29 @@ struct HomeView: View {
                             .font(.system(size: 26, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
                         Spacer()
+                        // 連続ログイン日数
+                        HStack(spacing: 4) {
+                            Text("🔥")
+                                .font(.system(size: 14))
+                            Text("\(appState.consecutiveLoginDays)日連続")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(.orange)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.orange.opacity(0.12))
+                        .cornerRadius(10)
                         Button(action: { showSettings = true }) {
                             Image(systemName: "gearshape")
                                 .font(.system(size: 22))
                                 .foregroundColor(AppColor.textSecondary)
                         }
+                        .padding(.leading, 6)
                     }
                     .padding(.top, 8)
 
                     // やりくりん
                     MascotCard()
-
-                    // 連続ログインストリーク
-                    LoginStreakBanner()
 
                     // 残予算・給料日まで・1日の目安
                     quickStatsRow
