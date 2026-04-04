@@ -76,10 +76,10 @@ private struct ExpenseInputForm: View {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("📅 変動費")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(AppColor.caution)
                         Text("月によって金額が変わる支出。自動車税・医療費・旅行など一度きりや不定期の支払い。")
-                            .font(.system(size: 11))
+                            .font(.system(size: 13))
                             .foregroundColor(AppColor.textTertiary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -87,10 +87,10 @@ private struct ExpenseInputForm: View {
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text("📋 固定費")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(AppColor.primary)
                         Text("毎月ほぼ同じ金額がかかる支出。家賃・保険・サブスクなど毎月自動で引き落とされるもの。")
-                            .font(.system(size: 11))
+                            .font(.system(size: 13))
                             .foregroundColor(AppColor.textTertiary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -336,7 +336,7 @@ private struct IncomeInputForm: View {
 private func inputField<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
     VStack(alignment: .leading, spacing: 6) {
         Text(label)
-            .font(.system(size: 12, weight: .medium))
+            .font(.system(size: 13, weight: .medium))
             .foregroundColor(AppColor.textSecondary)
         content()
     }
@@ -345,11 +345,11 @@ private func inputField<Content: View>(label: String, @ViewBuilder content: () -
 private func amountField(text: Binding<String>) -> some View {
     HStack(spacing: 4) {
         Text("¥")
-            .font(.system(size: 18, weight: .bold))
+            .font(.system(size: 17, weight: .bold))
             .foregroundColor(AppColor.primary)
         TextField("0", text: text)
             .keyboardType(.numberPad)
-            .font(.system(size: 18, weight: .semibold))
+            .font(.system(size: 17, weight: .semibold))
     }
     .padding(.horizontal, 14)
     .padding(.vertical, 12)
@@ -362,7 +362,7 @@ private func saveButton(label: String, color: Color, saved: Bool, action: @escap
     Button(action: action) {
         HStack(spacing: 8) {
             Image(systemName: saved ? "checkmark.circle.fill" : "plus.circle.fill")
-                .font(.system(size: 16))
+                .font(.system(size: 17))
             Text(label)
                 .fontWeight(.semibold)
         }
