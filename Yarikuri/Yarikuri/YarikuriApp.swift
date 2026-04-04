@@ -44,7 +44,7 @@ struct YarikuriApp: App {
                     NotificationManager.shared.requestPermission()
                     // デバッグ用：データがない場合、またはデモデータのバージョンが古い場合はデモデータを自動ロード
                     #if DEBUG
-                    let currentDemoVersion = "2.44"
+                    let currentDemoVersion = "2.62"
                     let savedDemoVersion = UserDefaults.standard.string(forKey: "demoDataVersion") ?? ""
                     if appState.userProfile == nil || savedDemoVersion != currentDemoVersion {
                         appState.loadDemoData()

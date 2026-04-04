@@ -30,7 +30,7 @@ enum IncomeCategory: String, Codable, CaseIterable {
 }
 
 // MARK: - 収入記録
-struct IncomeRecord: Codable, Identifiable {
+struct IncomeRecord: Identifiable, Encodable {
     var id: UUID = UUID()
     var year: Int
     var month: Int
@@ -42,5 +42,24 @@ struct IncomeRecord: Codable, Identifiable {
 
     var displayLabel: String {
         "\(year)年\(month)月"
+    }
+}
+
+// 旧データ（day/name/category なし）との互換デコード
+extension IncomeRecord: Decodable {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id       = (try? c.decodeIfPresent(UUID.self,           forKey: .id))      ?? UUID()
+        year     = try c.decode(Int.self,                        forKey: .year)
+        month    = try c.decode(Int.self,                        forKey: .month)
+        day      = (try? c.decodeIfPresent(Int.self,            forKey: .day))     ?? 1
+        amount   = try c.decode(Int.self,                        forKey: .amount)
+        name     = (try? c.decodeIfPresent(String.self,         forKey: .name))    ?? ""
+        category = (try? c.decodeIfPresent(IncomeCategory.self, forKey: .category)) ?? .salary
+        note     = (try? c.decodeIfPresent(String.self,         forKey: .note))    ?? ""
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, year, month, day, amount, name, category, note
     }
 }
