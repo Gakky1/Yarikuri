@@ -229,7 +229,7 @@ struct ProtectScreenView: View {
                         )
                         LockedNavCard(
                             unlockedEmoji: "🔑",
-                            unlockedTitle: "節約\n裏ワザ集",
+                            unlockedTitle: "節約裏ワザ集",
                             unlockedSubtitle: "知らないと損する節約術",
                             unlockedColor: Color(red: 0.85, green: 0.55, blue: 0.10),
                             currentDays: appState.consecutiveLoginDays,
@@ -375,7 +375,7 @@ struct GrowScreenView: View {
 
                         LockedNavCard(
                             unlockedEmoji: "👑",
-                            unlockedTitle: "マネー\nマスター術",
+                            unlockedTitle: "マネーマスター術",
                             unlockedSubtitle: "上級者向けのお金の増やし方",
                             unlockedColor: Color(red: 0.55, green: 0.30, blue: 0.90),
                             currentDays: appState.consecutiveLoginDays,
@@ -711,14 +711,14 @@ private struct LockedNavCard: View {
         Button(action: { if isUnlocked { action() } }) {
             ZStack {
                 if isUnlocked {
-                    VStack(spacing: 7) {
-                        Text(unlockedEmoji).font(.system(size: 32))
+                    VStack(spacing: 9) {
+                        Text(unlockedEmoji).font(.system(size: 36))
                         Text(unlockedTitle)
-                            .font(.system(size: 14, weight: .bold))
+                            .font(.system(size: 17, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
-                            .multilineTextAlignment(.center).lineLimit(2)
+                            .multilineTextAlignment(.center).lineLimit(1)
                         Text(unlockedSubtitle)
-                            .font(.system(size: 10))
+                            .font(.system(size: 13))
                             .foregroundColor(AppColor.textSecondary)
                             .multilineTextAlignment(.center).lineLimit(2)
                     }
