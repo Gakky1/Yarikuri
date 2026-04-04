@@ -9,18 +9,21 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            NavigationStack { HomeView() }
+            InputTabView()
                 .tag(0)
-                .tabItem { Image(systemName: "house") }
-            NavigationStack { CommunityScreenView() }
-                .tag(1)
-                .tabItem { Image(systemName: "person.2") }
+                .tabItem { Label("入力", systemImage: "plus.circle") }
             NavigationStack { ProtectScreenView() }
-                .tag(2)
-                .tabItem { Image(systemName: "chart.line.downtrend.xyaxis") }
+                .tag(1)
+                .tabItem { Label("支出", systemImage: "chart.line.downtrend.xyaxis") }
             NavigationStack { GrowScreenView() }
+                .tag(2)
+                .tabItem { Label("収入", systemImage: "chart.line.uptrend.xyaxis") }
+            NavigationStack { HomeView() }
                 .tag(3)
-                .tabItem { Image(systemName: "chart.line.uptrend.xyaxis") }
+                .tabItem { Label("ホーム", systemImage: "house") }
+            NavigationStack { CommunityScreenView() }
+                .tag(4)
+                .tabItem { Label("みんな", systemImage: "person.2") }
         }
         .background(AppColor.background)
         .overlay {
@@ -39,7 +42,7 @@ struct MainTabView: View {
                     // 横方向が縦の2倍以上の場合のみタブ切り替え（誤タップ防止）
                     guard abs(horizontal) > vertical * 2 else { return }
                     if horizontal < 0 {
-                        selectedTab = min(selectedTab + 1, 3)
+                        selectedTab = min(selectedTab + 1, 4)
                     } else {
                         selectedTab = max(selectedTab - 1, 0)
                     }
