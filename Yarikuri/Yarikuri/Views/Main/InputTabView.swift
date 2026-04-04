@@ -35,7 +35,6 @@ struct InputTabView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 8)
             }
         }
     }
