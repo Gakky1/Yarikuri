@@ -21,9 +21,6 @@ struct MainTabView: View {
             NavigationStack { HomeView() }
                 .tag(3)
                 .tabItem { Image(systemName: "house") }
-            NavigationStack { CommunityScreenView() }
-                .tag(4)
-                .tabItem { Image(systemName: "person.2") }
         }
         .background(AppColor.background)
         .overlay {
@@ -42,7 +39,7 @@ struct MainTabView: View {
                     // 横方向が縦の2倍以上の場合のみタブ切り替え（誤タップ防止）
                     guard abs(horizontal) > vertical * 2 else { return }
                     if horizontal < 0 {
-                        selectedTab = min(selectedTab + 1, 4)
+                        selectedTab = min(selectedTab + 1, 3)
                     } else {
                         selectedTab = max(selectedTab - 1, 0)
                     }
@@ -150,7 +147,7 @@ struct CommunityScreenView: View {
 }
 
 // シート種別（1つのsheet(item:)で管理するため）
-private enum CommunityActiveSheet: Identifiable {
+enum CommunityActiveSheet: Identifiable {
     case comment(CommunityPost)
     case compose
 

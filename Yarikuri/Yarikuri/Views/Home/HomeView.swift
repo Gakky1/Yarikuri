@@ -9,6 +9,8 @@ struct HomeView: View {
     @State private var showPaydaySettings  = false
     @State private var showDailyBudgetDetail = false
     @State private var showSettings = false
+    @State private var selectedCommunityTab: FeedTab = .recommend
+    @State private var activeCommunitySheet: CommunityActiveSheet? = nil
 
     var body: some View {
         ZStack {
@@ -42,6 +44,9 @@ struct HomeView: View {
                     // 次の支払い
                     NextPaymentsCard(onDetailTap: { showPaymentDetail = true })
 
+                    // みんなの行動
+                    communitySection
+
                     Spacer().frame(height: 20)
                 }
                 .padding(.horizontal, 16)
@@ -65,6 +70,63 @@ struct HomeView: View {
         .sheet(isPresented: $showSettings) {
             MyPageView()
                 .environmentObject(appState)
+        }
+        .sheet(item: $activeCommunitySheet) { sheet in
+            switch sheet {
+            case .comment(let post):
+                CommentSheet(post: post).environmentObject(appState)
+            case .compose:
+                PostComposerSheet().environmentObject(appState)
+            }
+        }
+    }
+
+    // MARK: - みんなの行動セクション
+    private var communitySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("みんなの行動")
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundColor(AppColor.textPrimary)
+                Spacer()
+                Button(action: { activeCommunitySheet = .compose }) {
+                    Image(systemName: "square.and.pencil")
+                        .font(.system(size: 18))
+                        .foregroundColor(AppColor.primary)
+                }
+            }
+
+            FeedTabBar(selected: $selectedCommunityTab)
+
+            let posts: [CommunityPost] = {
+                switch selectedCommunityTab {
+                case .recommend: return appState.recommendedPosts
+                case .following: return appState.followingPosts
+                case .mine:      return appState.myPosts
+                }
+            }()
+
+            if posts.isEmpty {
+                VStack(spacing: 10) {
+                    Text(selectedCommunityTab == .following ? "👤" : "📭")
+                        .font(.system(size: 36))
+                    Text(selectedCommunityTab == .following
+                         ? "まだフォロー中のユーザーがいません"
+                         : "投稿がありません")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(AppColor.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 30)
+                .background(AppColor.cardBackground)
+                .cornerRadius(16)
+                .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
+            } else {
+                ForEach(posts) { post in
+                    CommunityPostCard(post: post,
+                                     onCommentTap: { activeCommunitySheet = .comment(post) })
+                }
+            }
         }
     }
 
@@ -113,12 +175,12 @@ private struct QuickStatCard: View {
         VStack(spacing: 6) {
             Text(emoji).font(.system(size: 28))
             Text(value)
-                .font(.system(size: 14, weight: .bold))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundColor(color)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
             Text(label)
-                .font(.system(size: 10))
+                .font(.system(size: 12))
                 .foregroundColor(AppColor.textTertiary)
         }
         .frame(maxWidth: .infinity)
