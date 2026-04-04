@@ -208,7 +208,7 @@ struct ProtectScreenView: View {
                         )
                         ProtectNavCard(
                             emoji: "📅",
-                            title: "一時的な支払い",
+                            title: "変動費",
                             subtitle: appState.scheduledPaymentsThisMonth.isEmpty ? "支払いなし" : appState.totalScheduledPayments.yen,
                             color: AppColor.caution,
                             action: { showPayment = true }

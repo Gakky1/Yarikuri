@@ -49,7 +49,7 @@ struct PaymentDetailView: View {
                     .padding(.top, 8)
                 }
             }
-            .navigationTitle("一時的な支払いの詳細")
+            .navigationTitle("変動費の詳細")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -263,7 +263,7 @@ struct PaymentDetailView: View {
         let total     = appState.scheduledPayments.count
         return HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("一時的な支払い予定合計（未払い）")
+                Text("変動費予定合計（未払い）")
                     .font(.system(size: 13))
                     .foregroundColor(AppColor.textSecondary)
                 Text(appState.totalAllUnpaidPayments.yen)
@@ -285,7 +285,7 @@ struct PaymentDetailView: View {
     // MARK: - 支払いリスト
     private var paymentListCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("直近の一時的な支払い")
+            Text("直近の変動費")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(AppColor.textSecondary)
 
@@ -313,7 +313,7 @@ struct PaymentDetailView: View {
             return $0.month > $1.month
         }
         return VStack(alignment: .leading, spacing: 12) {
-            Text("過去の一時的な支払い")
+            Text("過去の変動費")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(AppColor.textSecondary)
 
