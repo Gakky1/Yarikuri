@@ -9,6 +9,7 @@ struct HomeView: View {
     @State private var showPaydaySettings  = false
     @State private var showDailyBudgetDetail = false
     @State private var showSettings = false
+    @State private var showLoginCalendar = false
     @State private var selectedCommunityTab: FeedTab = .recommend
     @State private var activeCommunitySheet: CommunityActiveSheet? = nil
 
@@ -24,18 +25,21 @@ struct HomeView: View {
                             .font(.system(size: 26, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
                         Spacer()
-                        // 連続ログイン日数
-                        HStack(spacing: 4) {
-                            Text("🔥")
-                                .font(.system(size: 14))
-                            Text("\(appState.consecutiveLoginDays)日連続")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(.orange)
+                        // 連続ログイン日数（タップでカレンダー表示）
+                        Button(action: { showLoginCalendar = true }) {
+                            HStack(spacing: 4) {
+                                Text("🔥")
+                                    .font(.system(size: 14))
+                                Text("\(appState.consecutiveLoginDays)日連続")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(.orange)
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.orange.opacity(0.12))
+                            .cornerRadius(10)
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.orange.opacity(0.12))
-                        .cornerRadius(10)
+                        .buttonStyle(.plain)
                         Button(action: { showSettings = true }) {
                             Image(systemName: "gearshape")
                                 .font(.system(size: 22))
@@ -66,6 +70,7 @@ struct HomeView: View {
                 .padding(.top, 12)
             }
         }
+        .sheet(isPresented: $showLoginCalendar)    { LoginCalendarView().environmentObject(appState) }
         .sheet(isPresented: $showPaymentDetail)    { UpcomingPaymentsListView().environmentObject(appState) }
         .sheet(isPresented: $showTaskDetail)       { TodayTaskDetailView() }
         .sheet(isPresented: $showBudgetBreakdown)  {

@@ -82,6 +82,12 @@ final class AppState: ObservableObject {
     @Published var growActionsTotal: Int    = UserDefaults.standard.integer(forKey: "growActionsTotal")
     @Published var consecutiveLoginDays: Int = UserDefaults.standard.integer(forKey: "consecutiveLoginDays")
 
+    // ログイン日履歴（"yyyy-MM-dd" 形式の文字列セット）
+    @Published var loginDateHistory: Set<String> = {
+        let arr = UserDefaults.standard.stringArray(forKey: "loginDateHistory") ?? []
+        return Set(arr)
+    }()
+
     @Published var protectRoom: RoomConfig = {
         if let data = UserDefaults.standard.data(forKey: "protectRoom"),
            let config = try? JSONDecoder().decode(RoomConfig.self, from: data) { return config }
@@ -194,6 +200,18 @@ final class AppState: ObservableObject {
         UserDefaults.standard.set(25, forKey: "protectActionsTotal")
         UserDefaults.standard.set(25, forKey: "growActionsTotal")
         UserDefaults.standard.set(20, forKey: "consecutiveLoginDays")
+        // デモ用：過去20日分のログイン日履歴を生成
+        let demoFormatter = DateFormatter()
+        demoFormatter.dateFormat = "yyyy-MM-dd"
+        let demoCalendar = Calendar.current
+        var demoDates: Set<String> = []
+        for i in 0..<20 {
+            if let d = demoCalendar.date(byAdding: .day, value: -i, to: Date()) {
+                demoDates.insert(demoFormatter.string(from: d))
+            }
+        }
+        loginDateHistory = demoDates
+        UserDefaults.standard.set(Array(demoDates), forKey: "loginDateHistory")
         completedTaskIds = Set((0..<25).map { "demo-task-\($0)" })
         dataStore.saveCompletedTaskIds(Array(completedTaskIds))
 
@@ -913,6 +931,12 @@ final class AppState: ObservableObject {
         }
         UserDefaults.standard.set(consecutiveLoginDays, forKey: "consecutiveLoginDays")
         UserDefaults.standard.set(today, forKey: "lastLoginDate")
+        // ログイン日履歴に追加
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let dateStr = formatter.string(from: today)
+        loginDateHistory.insert(dateStr)
+        UserDefaults.standard.set(Array(loginDateHistory), forKey: "loginDateHistory")
         // マイルストーン達成時はトースト表示フラグを立てる
         if [3, 7, 14, 30].contains(consecutiveLoginDays) {
             pendingStreakMilestone = consecutiveLoginDays
