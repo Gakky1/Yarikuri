@@ -27,11 +27,11 @@ struct HomeView: View {
                         Spacer()
                         // 連続ログイン日数（タップでカレンダー表示）
                         Button(action: { showLoginCalendar = true }) {
-                            HStack(spacing: 4) {
+                            HStack(spacing: 3) {
                                 Text("🔥")
                                     .font(.system(size: 14))
-                                Text("\(appState.consecutiveLoginDays)日連続")
-                                    .font(.system(size: 13, weight: .semibold))
+                                Text("\(appState.consecutiveLoginDays)")
+                                    .font(.system(size: 13, weight: .bold))
                                     .foregroundColor(.orange)
                             }
                             .padding(.horizontal, 8)
