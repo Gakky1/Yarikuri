@@ -322,13 +322,16 @@ struct MascotCard: View {
                         Text("やりくりん")
                             .font(.system(size: 17, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
-                        Text("Lv.\(level)")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
-                            .background(AppColor.primary)
-                            .cornerRadius(10)
+                        Button(action: { showLevelSheet = true }) {
+                            Text("Lv.\(level)")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(AppColor.primary)
+                                .cornerRadius(10)
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     // プログレスバー
@@ -398,6 +401,9 @@ struct MascotCard: View {
         .shadow(color: AppColor.shadowColor, radius: 6, x: 0, y: 3)
         .onAppear {
             withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) { glowPulse = true }
+        }
+        .sheet(isPresented: $showLevelSheet) {
+            YarikurinLevelSheet(currentLevel: level)
         }
     }
 }
@@ -780,6 +786,123 @@ struct TodayRecommendationCard: View {
         .background(AppColor.accentLight)
         .cornerRadius(16)
         .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - やりくりんレベル一覧シート
+private struct YarikurinLevelSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let currentLevel: Int
+
+    private let levels: [(Int, String, String)] = [
+        (1, "たまご期", "0〜2タスク達成"),
+        (2, "めばえ期", "3〜6タスク達成"),
+        (3, "せいちょう期", "7〜12タスク達成"),
+        (4, "かがやき期", "13〜20タスク達成"),
+        (5, "マスター期", "21タスク以上達成"),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                AppColor.background.ignoresSafeArea()
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        Text("タスクをこなしてやりくりんを育てよう！")
+                            .font(.system(size: 13))
+                            .foregroundColor(AppColor.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.top, 4)
+
+                        ForEach(levels, id: \.0) { (lv, name, requirement) in
+                            levelCard(lv: lv, name: name, requirement: requirement)
+                        }
+
+                        Spacer().frame(height: 20)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+                }
+            }
+            .navigationTitle("やりくりんの成長")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("閉じる") { dismiss() }
+                        .foregroundColor(AppColor.primary)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func levelCard(lv: Int, name: String, requirement: String) -> some View {
+        let isAchieved = lv <= currentLevel
+        let isCurrent  = lv == currentLevel
+
+        HStack(spacing: 16) {
+            ZStack {
+                if isAchieved {
+                    CoronView(size: 60, emotion: lv == 5 ? .celebrate : lv == 4 ? .happy : .normal,
+                              animate: false, level: lv)
+                        .frame(width: 72, height: 68)
+                } else {
+                    // シルエット表示
+                    CoronView(size: 60, emotion: .normal, animate: false, level: lv)
+                        .frame(width: 72, height: 68)
+                        .grayscale(1.0)
+                        .opacity(0.35)
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(AppColor.textTertiary)
+                        .offset(y: 20)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
+                    Text("Lv.\(lv)")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2)
+                        .background(isAchieved ? AppColor.primary : AppColor.textTertiary)
+                        .cornerRadius(8)
+                    Text(name)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(isAchieved ? AppColor.textPrimary : AppColor.textTertiary)
+                    if isCurrent {
+                        Text("NOW")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(AppColor.primary)
+                            .padding(.horizontal, 5).padding(.vertical, 2)
+                            .background(AppColor.primaryLight)
+                            .cornerRadius(4)
+                    }
+                }
+                Text(requirement)
+                    .font(.system(size: 12))
+                    .foregroundColor(isAchieved ? AppColor.textSecondary : AppColor.textTertiary)
+            }
+
+            Spacer()
+
+            if isAchieved {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundColor(AppColor.primary)
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(isCurrent ? AppColor.primaryLight : AppColor.cardBackground)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(isCurrent ? AppColor.primary.opacity(0.4) : Color.clear, lineWidth: 1.5)
+        )
+        .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 1)
     }
 }
 
