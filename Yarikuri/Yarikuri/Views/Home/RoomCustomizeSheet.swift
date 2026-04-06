@@ -186,12 +186,77 @@ struct RoomCustomizeSheet: View {
                     }
                     .padding(.horizontal, 16)
 
+                    // おきたいものの説明
+                    if !isProtect {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "bubble.left.fill")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(AppColor.safe.opacity(0.8))
+                                Text("やりくりんのひとことが変わるりん！")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(AppColor.safe)
+                            }
+                            Text("「おきたいもの」の組み合わせによって、収入を増やすタブに表示されるやりくりんの吹き出しのセリフが変わります。いろんな組み合わせを試してみてりん✨")
+                                .font(.system(size: 12))
+                                .foregroundColor(AppColor.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(3)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                comboHint(items: "🏆 + 🍷", text: "成功、祝えそうりん🥂")
+                                comboHint(items: "👜 + 🎨", text: "センスいい生活できそうりん🎨")
+                                comboHint(items: "🍽️ + 🍷", text: "豪華ディナーできそうりん🍽️")
+                                comboHint(items: "🏆 のみ",  text: "目標達成できちゃいそうりん！")
+                                comboHint(items: "👜 のみ",  text: "欲しいもの買えそうりん👜")
+                            }
+                            .padding(.top, 4)
+                        }
+                        .padding(14)
+                        .background(AppColor.safeLight.opacity(0.6))
+                        .cornerRadius(12)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 4)
+                    }
+
+                    if isProtect {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "bubble.left.fill")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(AppColor.primary.opacity(0.7))
+                                Text("やりくりんのひとことが変わるりん！")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(AppColor.primary)
+                            }
+                            Text("「おきたいもの」の組み合わせによって、支出を減らすタブに表示されるやりくりんの吹き出しのセリフが変わります。いろんな組み合わせを試してみてりん✨")
+                                .font(.system(size: 12))
+                                .foregroundColor(AppColor.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(3)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                comboHint(items: "☕ + 🧳", text: "旅先でもカフェできそうりん✈️")
+                                comboHint(items: "📚 + 🕯️", text: "ゆっくり読書できそうりん📚")
+                                comboHint(items: "🖼️ + 🧳", text: "旅の思い出、増えそうりん🗼")
+                                comboHint(items: "☕ のみ",   text: "カフェ行けそうりん☕")
+                                comboHint(items: "🧳 のみ",   text: "旅行できちゃいそうりん✈️")
+                            }
+                            .padding(.top, 4)
+                        }
+                        .padding(14)
+                        .background(AppColor.primaryLight.opacity(0.5))
+                        .cornerRadius(12)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 4)
+                    }
+
                     Spacer().frame(height: 20)
                 }
                 .padding(.top, 16)
             }
             .background(AppColor.background.ignoresSafeArea())
-            .navigationTitle(isProtect ? "支出を減らす部屋を着せ替え" : "増やす部屋を着せ替え")
+            .navigationTitle(isProtect ? "支出の部屋を着せ替え" : "収入の部屋を着せ替え")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -206,6 +271,19 @@ struct RoomCustomizeSheet: View {
                 floorStyle = currentConfig.floorStyle
                 selectedItems = currentConfig.activeItems
             }
+        }
+    }
+
+    private func comboHint(items: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Text(items)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(AppColor.primary)
+                .frame(width: 90, alignment: .leading)
+            Text("→ \"\(text)\"")
+                .font(.system(size: 11))
+                .foregroundColor(AppColor.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
