@@ -15,12 +15,14 @@ struct FixedExpenseView: View {
     @State private var showAddForm = false
     @State private var showReport = false
     @State private var selectedReviewExpense: FixedExpense? = nil
+    @State private var editingExpense: FixedExpense? = nil
     @State private var selectedChartMonth: Int? = nil
     @State private var newName = ""
     @State private var newAmountText = ""
     @State private var newCategory: FixedExpenseCategory = .other
     @State private var newIsSubscription = false
     @State private var newBillingDay: Int = 1
+    @State private var newHolidayShift: HolidayShift = .none
 
     var body: some View {
         NavigationStack {
@@ -77,6 +79,14 @@ struct FixedExpenseView: View {
             }
             .sheet(item: $selectedReviewExpense) { expense in
                 ReviewLinksSheet(expense: expense)
+            }
+            .sheet(item: $editingExpense) { expense in
+                EditFixedExpenseSheet(expense: expense) { updated in
+                    if let idx = appState.fixedExpenses.firstIndex(where: { $0.id == updated.id }) {
+                        appState.fixedExpenses[idx] = updated
+                    }
+                }
+                .environmentObject(appState)
             }
         }
     }
@@ -369,10 +379,35 @@ struct FixedExpenseView: View {
                                 .foregroundColor(AppColor.textTertiary)
 
                             ForEach(expenses) { expense in
-                                Button(action: { selectedReviewExpense = expense }) {
-                                    ExpenseDetailRow(expense: expense, showReviewBadge: false)
+                                HStack(spacing: 6) {
+                                    Button(action: { selectedReviewExpense = expense }) {
+                                        ExpenseDetailRow(expense: expense, showReviewBadge: false)
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    VStack(spacing: 6) {
+                                        Button {
+                                            editingExpense = expense
+                                        } label: {
+                                            Image(systemName: "pencil")
+                                                .font(.system(size: 13))
+                                                .foregroundColor(AppColor.primary)
+                                                .frame(width: 32, height: 32)
+                                                .background(AppColor.primaryLight)
+                                                .cornerRadius(8)
+                                        }
+                                        Button {
+                                            appState.fixedExpenses.removeAll { $0.id == expense.id }
+                                        } label: {
+                                            Image(systemName: "trash")
+                                                .font(.system(size: 13))
+                                                .foregroundColor(AppColor.caution)
+                                                .frame(width: 32, height: 32)
+                                                .background(AppColor.cautionLight)
+                                                .cornerRadius(8)
+                                        }
+                                    }
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -403,6 +438,11 @@ struct FixedExpenseView: View {
                             Text("毎月\(day)日").tag(day)
                         }
                     }
+                    Picker("引き落とし日が休日の場合", selection: $newHolidayShift) {
+                        ForEach(HolidayShift.allCases, id: \.rawValue) { shift in
+                            Text(shift.displayText).tag(shift)
+                        }
+                    }
                 }
             }
             .navigationTitle("固定費を追加")
@@ -413,6 +453,7 @@ struct FixedExpenseView: View {
                         if let amount = Int(newAmountText), !newName.isEmpty {
                             let expense = FixedExpense(
                                 name: newName, amount: amount, billingDay: newBillingDay,
+                                holidayShift: newHolidayShift,
                                 category: newCategory, isSubscription: newIsSubscription
                             )
                             appState.fixedExpenses.append(expense)
@@ -786,6 +827,84 @@ struct ReviewLinksSheet: View {
             return "高金利のローンは低金利への借り換えで総返済額を大きく減らせます。複数のローンをおまとめする「債務整理」も選択肢のひとつです。"
         default:
             return "本当に必要か、月に何回使っているか見直してみましょう。使用頻度が低いサービスを解約するだけで、意外と大きな節約になります。"
+        }
+    }
+}
+
+// MARK: - 固定費編集シート
+struct EditFixedExpenseSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let expense: FixedExpense
+    let onSave: (FixedExpense) -> Void
+
+    @State private var name: String
+    @State private var amountText: String
+    @State private var category: FixedExpenseCategory
+    @State private var billingDay: Int
+    @State private var holidayShift: HolidayShift
+    @State private var isSubscription: Bool
+
+    init(expense: FixedExpense, onSave: @escaping (FixedExpense) -> Void) {
+        self.expense = expense
+        self.onSave = onSave
+        _name = State(initialValue: expense.name)
+        _amountText = State(initialValue: "\(expense.amount)")
+        _category = State(initialValue: expense.category)
+        _billingDay = State(initialValue: expense.billingDay ?? 1)
+        _holidayShift = State(initialValue: expense.holidayShift ?? .none)
+        _isSubscription = State(initialValue: expense.isSubscription)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("基本情報") {
+                    TextField("名前（例: Netflix）", text: $name)
+                    TextField("金額（円）", text: $amountText)
+                        .keyboardType(.numberPad)
+                    Picker("カテゴリ", selection: $category) {
+                        ForEach(FixedExpenseCategory.allCases, id: \.rawValue) { cat in
+                            Text("\(cat.emoji) \(cat.displayText)").tag(cat)
+                        }
+                    }
+                }
+                Section("詳細") {
+                    Toggle("サブスクリプション", isOn: $isSubscription)
+                    Picker("引き落とし日", selection: $billingDay) {
+                        ForEach(1...31, id: \.self) { day in
+                            Text("毎月\(day)日").tag(day)
+                        }
+                    }
+                    Picker("引き落とし日が休日の場合", selection: $holidayShift) {
+                        ForEach(HolidayShift.allCases, id: \.rawValue) { shift in
+                            Text(shift.displayText).tag(shift)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("固定費を編集")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("保存") {
+                        guard let amount = Int(amountText), !name.isEmpty else { return }
+                        var updated = expense
+                        updated.name = name
+                        updated.amount = amount
+                        updated.category = category
+                        updated.billingDay = billingDay
+                        updated.holidayShift = holidayShift
+                        updated.isSubscription = isSubscription
+                        onSave(updated)
+                        dismiss()
+                    }
+                    .foregroundColor(AppColor.primary)
+                    .disabled(name.isEmpty || Int(amountText) == nil)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("キャンセル") { dismiss() }
+                }
+            }
         }
     }
 }

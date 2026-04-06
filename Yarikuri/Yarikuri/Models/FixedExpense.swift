@@ -6,6 +6,7 @@ struct FixedExpense: Codable, Identifiable {
     var name: String                      // 名称（例: Netflix、家賃）
     var amount: Int                       // 月額
     var billingDay: Int?                  // 引き落とし日（1〜31）
+    var holidayShift: HolidayShift?      // 休日の場合の振替
     var category: FixedExpenseCategory   // カテゴリ
     var isSubscription: Bool             // サブスクかどうか
     var isReviewCandidate: Bool          // 見直し候補かどうか
@@ -16,6 +17,7 @@ struct FixedExpense: Codable, Identifiable {
         name: String,
         amount: Int,
         billingDay: Int? = nil,
+        holidayShift: HolidayShift? = nil,
         category: FixedExpenseCategory,
         isSubscription: Bool = false,
         isReviewCandidate: Bool = false,
@@ -25,10 +27,26 @@ struct FixedExpense: Codable, Identifiable {
         self.name = name
         self.amount = amount
         self.billingDay = billingDay
+        self.holidayShift = holidayShift
         self.category = category
         self.isSubscription = isSubscription
         self.isReviewCandidate = isReviewCandidate
         self.memo = memo
+    }
+}
+
+// MARK: - 休日振替
+enum HolidayShift: String, Codable, CaseIterable {
+    case previous = "previous"   // 休日の前の平日
+    case none     = "none"       // 変更なし
+    case next     = "next"       // 休日の後の平日
+
+    var displayText: String {
+        switch self {
+        case .previous: return "休日の前の平日"
+        case .none:     return "変更なし"
+        case .next:     return "休日の後の平日"
+        }
     }
 }
 

@@ -81,9 +81,19 @@ struct PaymentDetailView: View {
     }
 
     private var paymentChartPoints: [PaymentChartPoint] {
-        appState.scheduledPaymentHistory.map {
+        var points = appState.scheduledPaymentHistory.map {
             PaymentChartPoint(month: $0.month, amount: $0.totalAmount, year: $0.year)
         }
+        // 当月分を追加（履歴にない場合）
+        let cal = Calendar.current
+        let now = Date()
+        let currentYear = cal.component(.year, from: now)
+        let currentMonth = cal.component(.month, from: now)
+        let currentTotal = appState.scheduledPayments.reduce(0) { $0 + $1.amount }
+        if currentTotal > 0 && !appState.scheduledPaymentHistory.contains(where: { $0.year == currentYear && $0.month == currentMonth }) {
+            points.append(PaymentChartPoint(month: currentMonth, amount: currentTotal, year: currentYear))
+        }
+        return points
     }
 
     private var paymentYears: [Int] {

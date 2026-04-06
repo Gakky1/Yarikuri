@@ -82,6 +82,7 @@ struct UpcomingPaymentsListView: View {
 private struct UpcomingDetailRow: View {
     @EnvironmentObject var appState: AppState
     let item: UpcomingPaymentItem
+    @State private var editingPayment: ScheduledPayment? = nil
 
     // 変動費の場合、対応するScheduledPaymentを取得
     private var scheduledPayment: ScheduledPayment? {
@@ -90,7 +91,7 @@ private struct UpcomingDetailRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 10) {
             // 絵文字バッジ
             ZStack {
                 Circle()
@@ -116,10 +117,8 @@ private struct UpcomingDetailRow: View {
                         Text("あと\(item.daysUntil)日")
                             .font(.system(size: 11, weight: .bold))
                             .foregroundColor(AppColor.danger)
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 2)
-                            .background(AppColor.dangerLight)
-                            .cornerRadius(4)
+                            .padding(.horizontal, 5).padding(.vertical, 2)
+                            .background(AppColor.dangerLight).cornerRadius(4)
                     } else if item.daysUntil <= 7 {
                         Text("あと\(item.daysUntil)日")
                             .font(.system(size: 11, weight: .medium))
@@ -130,21 +129,33 @@ private struct UpcomingDetailRow: View {
 
             Spacer()
 
-            // 金額 + 変動費の場合は済みボタン
-            VStack(alignment: .trailing, spacing: 6) {
-                Text(item.amount.yen)
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(item.daysUntil <= 3 ? AppColor.danger : AppColor.textPrimary)
+            // 金額
+            Text(item.amount.yen)
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(item.daysUntil <= 3 ? AppColor.danger : AppColor.textPrimary)
 
-                if item.kind == .variable, let payment = scheduledPayment {
-                    Button(action: { appState.markPaymentAsPaid(payment) }) {
-                        Text("済み")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(AppColor.secondary)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(AppColor.secondaryLight)
-                            .cornerRadius(6)
+            // 変動費のみ: 編集・削除ボタン
+            if item.kind == .variable {
+                VStack(spacing: 4) {
+                    Button {
+                        editingPayment = scheduledPayment
+                    } label: {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 12))
+                            .foregroundColor(AppColor.primary)
+                            .frame(width: 28, height: 28)
+                            .background(AppColor.primaryLight)
+                            .cornerRadius(7)
+                    }
+                    Button {
+                        appState.scheduledPayments.removeAll { $0.id == item.id }
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 12))
+                            .foregroundColor(AppColor.caution)
+                            .frame(width: 28, height: 28)
+                            .background(AppColor.cautionLight)
+                            .cornerRadius(7)
                     }
                 }
             }
@@ -153,6 +164,13 @@ private struct UpcomingDetailRow: View {
         .background(item.daysUntil <= 3 ? AppColor.dangerLight : AppColor.cardBackground)
         .cornerRadius(12)
         .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 1)
+        .sheet(item: $editingPayment) { payment in
+            EditScheduledPaymentSheet(payment: payment) { updated in
+                if let idx = appState.scheduledPayments.firstIndex(where: { $0.id == updated.id }) {
+                    appState.scheduledPayments[idx] = updated
+                }
+            }
+        }
     }
 
     private var kindBadge: some View {
@@ -169,5 +187,68 @@ private struct UpcomingDetailRow: View {
         item.daysUntil <= 3 ? AppColor.danger
             : item.daysUntil <= 7 ? AppColor.caution
             : AppColor.secondary
+    }
+}
+
+// MARK: - 変動費編集シート
+private struct EditScheduledPaymentSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let payment: ScheduledPayment
+    let onSave: (ScheduledPayment) -> Void
+
+    @State private var name: String
+    @State private var amountText: String
+    @State private var dueDate: Date
+    @State private var category: PaymentCategory
+
+    init(payment: ScheduledPayment, onSave: @escaping (ScheduledPayment) -> Void) {
+        self.payment = payment
+        self.onSave = onSave
+        _name = State(initialValue: payment.name)
+        _amountText = State(initialValue: "\(payment.amount)")
+        _dueDate = State(initialValue: payment.dueDate)
+        _category = State(initialValue: payment.category)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("基本情報") {
+                    TextField("名前", text: $name)
+                    TextField("金額（円）", text: $amountText)
+                        .keyboardType(.numberPad)
+                    Picker("カテゴリ", selection: $category) {
+                        ForEach(PaymentCategory.allCases, id: \.rawValue) { cat in
+                            Text("\(cat.emoji) \(cat.displayText)").tag(cat)
+                        }
+                    }
+                }
+                Section("支払い日") {
+                    DatePicker("支払い予定日", selection: $dueDate, displayedComponents: .date)
+                        .environment(\.locale, Locale(identifier: "ja_JP"))
+                }
+            }
+            .navigationTitle("変動費を編集")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("保存") {
+                        guard let amount = Int(amountText), !name.isEmpty else { return }
+                        var updated = payment
+                        updated.name = name
+                        updated.amount = amount
+                        updated.dueDate = dueDate
+                        updated.category = category
+                        onSave(updated)
+                        dismiss()
+                    }
+                    .foregroundColor(AppColor.primary)
+                    .disabled(name.isEmpty || Int(amountText) == nil)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("キャンセル") { dismiss() }
+                }
+            }
+        }
     }
 }
