@@ -12,14 +12,14 @@ struct InputTabView: View {
             AppColor.background.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
-                    // ヘッダー（ナビゲーションバー非表示分44pt + 他タブと同じ8pt = 52pt）
+                    // ヘッダー（HomeViewと同じ構造: VStack 12pt + HStack 8pt = 20pt）
                     HStack {
                         Text("入力")
                             .font(.system(size: 26, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
                         Spacer()
                     }
-                    .padding(.top, 52)
+                    .padding(.top, 8)
 
                     // セグメント切り替え
                     Picker("", selection: $selectedInputTab) {
@@ -35,6 +35,7 @@ struct InputTabView: View {
                     }
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 12)
             }
         }
     }
