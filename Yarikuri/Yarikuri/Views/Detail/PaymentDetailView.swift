@@ -29,11 +29,11 @@ struct PaymentDetailView: View {
 
                 ScrollView {
                     VStack(spacing: 16) {
-                        // 支払い推移グラフ
-                        paymentChartCard
-
                         // 今月の支払い合計
                         totalCard
+
+                        // 支払い推移グラフ
+                        paymentChartCard
 
                         // 支払い一覧
                         paymentListCard
@@ -278,7 +278,7 @@ struct PaymentDetailView: View {
         let total     = appState.scheduledPayments.count
         return HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("変動費予定合計（未払い）")
+                Text("今月の変動費")
                     .font(.system(size: 13))
                     .foregroundColor(AppColor.textSecondary)
                 Text(appState.totalAllUnpaidPayments.yen)

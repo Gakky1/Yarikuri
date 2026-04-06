@@ -4,6 +4,7 @@ import SwiftUI
 struct TodayTaskDetailView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.dismiss) var dismiss
+    @State private var praiseTask: DailyTask? = nil
 
     var body: some View {
         NavigationStack {
@@ -21,11 +22,7 @@ struct TodayTaskDetailView: View {
                                 TaskDetailRow(
                                     task: task,
                                     isCompleted: appState.completedTaskIds.contains(task.id.uuidString),
-                                    onComplete: {
-                                        withAnimation {
-                                            appState.completeTask(task)
-                                        }
-                                    }
+                                    onTapAction: { praiseTask = task }
                                 )
                             }
                         }
@@ -34,6 +31,28 @@ struct TodayTaskDetailView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
+                }
+
+                // やりくりん褒めポップアップ
+                if let task = praiseTask {
+                    TaskPraisePopup(task: task) {
+                        withAnimation { appState.completeTask(task) }
+                        praiseTask = nil
+                        let tabIndex: Int
+                        switch task.taskType.tabDestination {
+                        case .home:    tabIndex = 0
+                        case .protect: tabIndex = 2
+                        case .recover: tabIndex = 3
+                        case .myPage:  tabIndex = 0
+                        }
+                        dismiss()
+                        NotificationCenter.default.post(
+                            name: Notification.Name("NavigateToTab"),
+                            object: tabIndex
+                        )
+                    } onDismiss: {
+                        praiseTask = nil
+                    }
                 }
             }
             .navigationTitle("今日やること")
@@ -67,7 +86,7 @@ struct TodayTaskDetailView: View {
 private struct TaskDetailRow: View {
     let task: DailyTask
     let isCompleted: Bool
-    let onComplete: () -> Void
+    let onTapAction: () -> Void
 
     var body: some View {
         VStack(spacing: 12) {
@@ -99,7 +118,7 @@ private struct TaskDetailRow: View {
             }
 
             if !isCompleted {
-                Button(action: onComplete) {
+                Button(action: onTapAction) {
                     Text(task.actionLabel)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.white)
@@ -125,6 +144,72 @@ private struct TaskDetailRow: View {
         case .sideIncomeCheck: return AppColor.accent
         case .reportCheck: return AppColor.primary
         case .budgetAlert: return AppColor.danger
+        }
+    }
+}
+
+// MARK: - やりくりん褒めポップアップ
+private struct TaskPraisePopup: View {
+    let task: DailyTask
+    let onConfirm: () -> Void
+    let onDismiss: () -> Void
+
+    private var praiseMessage: String {
+        switch task.taskType {
+        case .paymentDue:          return "支払いを確認しにいくりん！えらいりん✨"
+        case .debtSetup:           return "借金と向き合えてるりん！すごいりん💪"
+        case .fixedExpenseReview:  return "固定費チェック、さすがりん✂️"
+        case .systemCheck:         return "制度を調べるなんて賢いりん🏛️"
+        case .sideIncomeCheck:     return "副収入も意識してるりん！すごいりん💼"
+        case .reportCheck:         return "自分のお金と向き合えてるりん📊"
+        case .budgetAlert:         return "予算を気にしてえらいりん⚠️"
+        }
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.45)
+                .ignoresSafeArea()
+                .onTapGesture { onDismiss() }
+
+            VStack(spacing: 20) {
+                Text("🐷")
+                    .font(.system(size: 64))
+
+                VStack(spacing: 8) {
+                    Text("やりくりんより")
+                        .font(.system(size: 12))
+                        .foregroundColor(AppColor.textTertiary)
+                    Text(praiseMessage)
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(AppColor.textPrimary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                }
+                .padding(.horizontal, 8)
+
+                VStack(spacing: 10) {
+                    Button(action: onConfirm) {
+                        Text("確認しに行くりん →")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 13)
+                            .background(AppColor.primary)
+                            .cornerRadius(12)
+                    }
+                    Button(action: onDismiss) {
+                        Text("あとで確認する")
+                            .font(.system(size: 13))
+                            .foregroundColor(AppColor.textSecondary)
+                    }
+                }
+            }
+            .padding(28)
+            .background(AppColor.cardBackground)
+            .cornerRadius(24)
+            .shadow(color: AppColor.shadowColor, radius: 20, x: 0, y: 8)
+            .padding(.horizontal, 32)
         }
     }
 }

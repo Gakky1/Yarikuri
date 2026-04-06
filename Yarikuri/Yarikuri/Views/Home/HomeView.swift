@@ -492,9 +492,9 @@ struct BudgetBreakdownSheet: View {
                     VStack(spacing: 20) {
                         // 今月の収入(参考)と今月の予算の入力
                         VStack(alignment: .leading, spacing: 12) {
-                            // 先月の収入
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("先月の収入")
+                            // 先月の収入(参考)
+                            VStack(alignment: .center, spacing: 6) {
+                                Text("先月の収入(参考)")
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundColor(AppColor.textSecondary)
                                 HStack {
@@ -544,12 +544,12 @@ struct BudgetBreakdownSheet: View {
                         .cardStyle()
 
                         // 計算式内訳
-                        VStack(alignment: .leading, spacing: 14) {
+                        VStack(alignment: .center, spacing: 14) {
                             Text("💡 どうやって計算するの？")
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(AppColor.textSecondary)
 
-                            BreakdownRow(label: "📊 先月の収入", value: appState.monthlyIncome, color: AppColor.textSecondary, prefix: "")
+                            BreakdownRow(label: "📊 先月の収入(参考)", value: appState.monthlyIncome, color: AppColor.textSecondary, prefix: "")
                             BreakdownRow(label: "💰 今月の予算", value: displayBudget, color: AppColor.textPrimary, prefix: "")
                             BreakdownRow(label: "📋 毎月の固定費", value: appState.totalFixedExpenses, color: AppColor.caution, prefix: "−")
                             BreakdownRow(label: "📅 今月の支払い", value: appState.totalScheduledPayments, color: AppColor.caution, prefix: "−")
@@ -558,26 +558,14 @@ struct BudgetBreakdownSheet: View {
                             Divider()
 
                             let result = displayBudget - appState.totalFixedExpenses - appState.totalScheduledPayments - appState.totalMonthlyDebtPayments
-                            let incomeBudgetDiff = appState.monthlyIncome - displayBudget
-                            VStack(spacing: 10) {
-                                HStack {
-                                    Text("🐷 残りのお金")
-                                        .font(.system(size: 15, weight: .bold))
-                                        .foregroundColor(AppColor.textPrimary)
-                                    Spacer()
-                                    Text(max(0, result).yen)
-                                        .font(.system(size: 18, weight: .bold))
-                                        .foregroundColor(result >= 0 ? AppColor.primary : AppColor.danger)
-                                }
-                                HStack {
-                                    Text("📈 先月収入と今月予算の差")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(AppColor.textSecondary)
-                                    Spacer()
-                                    Text("\(incomeBudgetDiff >= 0 ? "+" : "")\(incomeBudgetDiff.yen)")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundColor(incomeBudgetDiff >= 0 ? AppColor.secondary : AppColor.danger)
-                                }
+                            HStack {
+                                Text("🐷 残りのお金")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .foregroundColor(AppColor.textPrimary)
+                                Spacer()
+                                Text(max(0, result).yen)
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(result >= 0 ? AppColor.primary : AppColor.danger)
                             }
                         }
                         .cardStyle()

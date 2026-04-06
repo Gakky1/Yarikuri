@@ -77,10 +77,10 @@ private struct ExpenseInputForm: View {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("📅 変動費")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(AppColor.caution)
                         Text("月によって金額が変わる支出。自動車税・医療費・旅行など一度きりや不定期の支払い。")
-                            .font(.system(size: 13))
+                            .font(.system(size: 14))
                             .foregroundColor(AppColor.textTertiary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -88,10 +88,10 @@ private struct ExpenseInputForm: View {
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text("📋 固定費")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(AppColor.primary)
                         Text("毎月ほぼ同じ金額がかかる支出。家賃・保険・サブスクなど毎月自動で引き落とされるもの。")
-                            .font(.system(size: 13))
+                            .font(.system(size: 14))
                             .foregroundColor(AppColor.textTertiary)
                             .fixedSize(horizontal: false, vertical: true)
                     }

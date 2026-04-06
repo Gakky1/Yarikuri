@@ -30,6 +30,12 @@ struct YarikuriApp: App {
 
         UITabBar.appearance().standardAppearance = tabAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabAppearance
+
+        // セグメントコントロールのフォントサイズ
+        UISegmentedControl.appearance().setTitleTextAttributes(
+            [.font: UIFont.systemFont(ofSize: 15, weight: .medium)], for: .normal)
+        UISegmentedControl.appearance().setTitleTextAttributes(
+            [.font: UIFont.systemFont(ofSize: 15, weight: .semibold)], for: .selected)
     }
 
     // AppStateをアプリ全体で共有するStateObject

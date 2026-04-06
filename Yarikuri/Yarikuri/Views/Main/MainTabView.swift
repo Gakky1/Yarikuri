@@ -14,7 +14,7 @@ struct MainTabView: View {
                 .tabItem { Image(systemName: "house") }
             InputTabView()
                 .tag(1)
-                .tabItem { Image(systemName: "plus.circle") }
+                .tabItem { Image(systemName: "pencil") }
             NavigationStack { ProtectScreenView() }
                 .tag(2)
                 .tabItem { Image(systemName: "chart.line.downtrend.xyaxis") }

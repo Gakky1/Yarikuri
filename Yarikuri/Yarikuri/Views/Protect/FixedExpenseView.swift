@@ -83,9 +83,19 @@ struct FixedExpenseView: View {
 
     // MARK: - 固定費推移グラフカード
     private var fixedExpChartPoints: [FixedExpChartPoint] {
-        appState.fixedExpenseHistory.map {
+        var points = appState.fixedExpenseHistory.map {
             FixedExpChartPoint(month: $0.month, amount: $0.totalAmount, year: $0.year)
         }
+        // 当月分を追加（履歴にない場合）
+        let cal = Calendar.current
+        let now = Date()
+        let currentYear = cal.component(.year, from: now)
+        let currentMonth = cal.component(.month, from: now)
+        let total = appState.totalFixedExpenses
+        if total > 0 && !appState.fixedExpenseHistory.contains(where: { $0.year == currentYear && $0.month == currentMonth }) {
+            points.append(FixedExpChartPoint(month: currentMonth, amount: total, year: currentYear))
+        }
+        return points
     }
 
     private func fixedExpAmount(year: Int, month: Int) -> Int? {
