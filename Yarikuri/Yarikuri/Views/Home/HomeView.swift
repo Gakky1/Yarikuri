@@ -12,6 +12,7 @@ struct HomeView: View {
     @State private var showLoginCalendar = false
     @State private var selectedCommunityTab: FeedTab = .recommend
     @State private var activeCommunitySheet: CommunityActiveSheet? = nil
+    @State private var showCommunityTimeline = false
 
     var body: some View {
         ZStack {
@@ -70,6 +71,7 @@ struct HomeView: View {
                 .padding(.top, 12)
             }
         }
+        .sheet(isPresented: $showCommunityTimeline) { CommunityTimelineSheet(initialTab: selectedCommunityTab).environmentObject(appState) }
         .sheet(isPresented: $showLoginCalendar)    { LoginCalendarView().environmentObject(appState) }
         .sheet(isPresented: $showPaymentDetail)    { UpcomingPaymentsListView().environmentObject(appState) }
         .sheet(isPresented: $showTaskDetail)       { TodayTaskDetailView() }
@@ -116,13 +118,14 @@ struct HomeView: View {
 
             FeedTabBar(selected: $selectedCommunityTab)
 
-            let posts: [CommunityPost] = {
+            let allPosts: [CommunityPost] = {
                 switch selectedCommunityTab {
                 case .recommend: return appState.recommendedPosts
                 case .following: return appState.followingPosts
                 case .mine:      return appState.myPosts
                 }
             }()
+            let posts = Array(allPosts.prefix(5))
 
             if posts.isEmpty {
                 VStack(spacing: 10) {
@@ -144,6 +147,23 @@ struct HomeView: View {
                     CommunityPostCard(post: post,
                                      onCommentTap: { activeCommunitySheet = .comment(post) })
                 }
+
+                // 詳細を見るボタン
+                Button(action: { showCommunityTimeline = true }) {
+                    HStack {
+                        Text("詳細を見る")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(AppColor.primary)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(AppColor.primary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(AppColor.primaryLight)
+                    .cornerRadius(12)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
