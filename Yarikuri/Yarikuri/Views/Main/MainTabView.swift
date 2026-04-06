@@ -360,19 +360,18 @@ struct GrowScreenView: View {
                                     subtitle: "YouTube・クラウド等9種",
                                     color: Color.red.opacity(0.75),
                                     action: { showFukugyou = true })
-                        GrowNavCard(emoji: "🏢", title: "キャリア・転職",
-                                    subtitle: "転職・資格・独立",
-                                    color: Color.indigo.opacity(0.8),
-                                    action: { showCareer = true })
-                        GrowNavCard(emoji: "🏯", title: "節税",
-                                    subtitle: "ふるさと納税・iDeCo等",
-                                    color: Color.orange.opacity(0.85),
-                                    action: { showSetsuzei = true })
                         GrowNavCard(emoji: "🌱", title: "NISA・投資",
                                     subtitle: "積立・成長投資枠等",
                                     color: Color(red: 0.18, green: 0.62, blue: 0.35),
                                     action: { showNisa = true })
-
+                        GrowNavCard(emoji: "🏯", title: "節税",
+                                    subtitle: "ふるさと納税・iDeCo等",
+                                    color: Color.orange.opacity(0.85),
+                                    action: { showSetsuzei = true })
+                        GrowNavCard(emoji: "🏢", title: "キャリア・転職",
+                                    subtitle: "転職・資格・独立",
+                                    color: Color.indigo.opacity(0.8),
+                                    action: { showCareer = true })
                         LockedNavCard(
                             unlockedEmoji: "👑",
                             unlockedTitle: "マネーマスター術",
@@ -381,7 +380,6 @@ struct GrowScreenView: View {
                             currentDays: appState.consecutiveLoginDays,
                             action: { showMaster = true }
                         )
-                        .gridCellColumns(2)
                     }
 
                     Spacer().frame(height: 20)

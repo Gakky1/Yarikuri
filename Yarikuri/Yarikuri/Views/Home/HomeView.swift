@@ -234,6 +234,7 @@ struct MascotCard: View {
     @EnvironmentObject var appState: AppState
     @State private var glowPulse = false
     @State private var tapBounce: CGFloat = 0
+    @State private var showLevelSheet = false
 
     private var completedCount: Int { appState.completedTaskIds.count }
 
