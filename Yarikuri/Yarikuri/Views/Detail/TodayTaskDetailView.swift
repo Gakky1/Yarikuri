@@ -22,7 +22,10 @@ struct TodayTaskDetailView: View {
                                 TaskDetailRow(
                                     task: task,
                                     isCompleted: appState.completedTaskIds.contains(task.id.uuidString),
-                                    onTapAction: { praiseTask = task }
+                                    onTapAction: {
+                                        withAnimation { appState.completeTask(task) }
+                                        praiseTask = task
+                                    }
                                 )
                             }
                         }
@@ -36,7 +39,6 @@ struct TodayTaskDetailView: View {
                 // やりくりん褒めポップアップ
                 if let task = praiseTask {
                     TaskPraisePopup(task: task) {
-                        withAnimation { appState.completeTask(task) }
                         praiseTask = nil
                         let tabIndex: Int
                         switch task.taskType.tabDestination {
@@ -50,8 +52,6 @@ struct TodayTaskDetailView: View {
                             name: Notification.Name("NavigateToTab"),
                             object: tabIndex
                         )
-                    } onDismiss: {
-                        praiseTask = nil
                     }
                 }
             }
@@ -151,8 +151,10 @@ private struct TaskDetailRow: View {
 // MARK: - やりくりん褒めポップアップ
 private struct TaskPraisePopup: View {
     let task: DailyTask
-    let onConfirm: () -> Void
-    let onDismiss: () -> Void
+    let onClose: () -> Void
+
+    @State private var bounceOffset: CGFloat = 40
+    @State private var opacity: Double = 0
 
     private var praiseMessage: String {
         switch task.taskType {
@@ -166,50 +168,71 @@ private struct TaskPraisePopup: View {
         }
     }
 
+    private var destinationLabel: String {
+        switch task.taskType.tabDestination {
+        case .protect: return "支出を減らすへ"
+        case .recover: return "収入を増やすへ"
+        default:       return "ホームへ"
+        }
+    }
+
     var body: some View {
         ZStack {
-            Color.black.opacity(0.45)
+            Color.black.opacity(0.5)
                 .ignoresSafeArea()
-                .onTapGesture { onDismiss() }
+                .onTapGesture { onClose() }
 
-            VStack(spacing: 20) {
-                Text("🐷")
-                    .font(.system(size: 64))
+            VStack(spacing: 0) {
+                // やりくりん本体
+                CoronView(size: 80, emotion: .celebrate, animate: true, level: 3)
+                    .frame(width: 110, height: 100)
+                    .offset(y: 10)
+                    .zIndex(1)
 
-                VStack(spacing: 8) {
-                    Text("やりくりんより")
-                        .font(.system(size: 12))
-                        .foregroundColor(AppColor.textTertiary)
-                    Text(praiseMessage)
-                        .font(.system(size: 17, weight: .bold))
-                        .foregroundColor(AppColor.textPrimary)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(3)
+                VStack(spacing: 18) {
+                    // 褒め言葉
+                    VStack(spacing: 6) {
+                        Text("やりくりんより")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(AppColor.textTertiary)
+                        Text(praiseMessage)
+                            .font(.system(size: 17, weight: .bold))
+                            .foregroundColor(AppColor.textPrimary)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(4)
+                            .padding(.horizontal, 4)
+                    }
+                    .padding(.top, 16)
+
+                    // 遷移先ボタン（閉じる＝遷移）
+                    Button(action: onClose) {
+                        HStack(spacing: 8) {
+                            Text(destinationLabel)
+                                .font(.system(size: 15, weight: .semibold))
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 13, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(AppColor.primary)
+                        .cornerRadius(13)
+                    }
                 }
-                .padding(.horizontal, 8)
-
-                VStack(spacing: 10) {
-                    Button(action: onConfirm) {
-                        Text("確認しに行くりん →")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 13)
-                            .background(AppColor.primary)
-                            .cornerRadius(12)
-                    }
-                    Button(action: onDismiss) {
-                        Text("あとで確認する")
-                            .font(.system(size: 13))
-                            .foregroundColor(AppColor.textSecondary)
-                    }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+                .background(AppColor.cardBackground)
+                .cornerRadius(24)
+            }
+            .padding(.horizontal, 36)
+            .offset(y: bounceOffset)
+            .opacity(opacity)
+            .onAppear {
+                withAnimation(.spring(response: 0.45, dampingFraction: 0.65)) {
+                    bounceOffset = 0
+                    opacity = 1
                 }
             }
-            .padding(28)
-            .background(AppColor.cardBackground)
-            .cornerRadius(24)
-            .shadow(color: AppColor.shadowColor, radius: 20, x: 0, y: 8)
-            .padding(.horizontal, 32)
         }
     }
 }
