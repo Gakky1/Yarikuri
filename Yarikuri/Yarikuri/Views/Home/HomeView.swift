@@ -520,7 +520,7 @@ struct BudgetBreakdownSheet: View {
                         // 今月の収入(参考)と今月の予算の入力
                         VStack(alignment: .leading, spacing: 12) {
                             // 先月の収入(参考)
-                            VStack(alignment: .center, spacing: 6) {
+                            VStack(alignment: .leading, spacing: 6) {
                                 Text("先月の収入(参考)")
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundColor(AppColor.textSecondary)
@@ -575,6 +575,8 @@ struct BudgetBreakdownSheet: View {
                             Text("💡 どうやって計算するの？")
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(AppColor.textSecondary)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.center)
 
                             BreakdownRow(label: "📊 先月の収入(参考)", value: appState.monthlyIncome, color: AppColor.textSecondary, prefix: "")
                             BreakdownRow(label: "💰 今月の予算", value: displayBudget, color: AppColor.textPrimary, prefix: "")

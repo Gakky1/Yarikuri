@@ -95,22 +95,28 @@ struct UpcomingPaymentRow: View {
     }
 }
 
-// MARK: - 支払い行（変動費専用、後方互換）
+// MARK: - 支払い行（変動費専用）
 struct PaymentRow: View {
     let payment: ScheduledPayment
     @EnvironmentObject var appState: AppState
+    @State private var editingPayment: ScheduledPayment? = nil
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             // 緊急度バッジ
-            urgencyBadge
+            ZStack {
+                Circle()
+                    .fill(urgencyColor.opacity(0.15))
+                    .frame(width: 40, height: 40)
+                Text(payment.category.emoji)
+                    .font(.system(size: 18))
+            }
 
             // 支払い情報
             VStack(alignment: .leading, spacing: 2) {
                 Text(payment.name)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(payment.isPaid ? AppColor.textTertiary : AppColor.textPrimary)
-                    .strikethrough(payment.isPaid)
+                    .foregroundColor(AppColor.textPrimary)
                 Text(payment.dueDate.monthDayWeekday)
                     .font(.system(size: 12))
                     .foregroundColor(AppColor.textSecondary)
@@ -118,68 +124,51 @@ struct PaymentRow: View {
 
             Spacer()
 
-            // 金額と完了/取消ボタン
-            VStack(alignment: .trailing, spacing: 4) {
-                Text(payment.amount.yen)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(payment.isPaid ? AppColor.textTertiary
-                                     : (payment.urgencyLevel == .urgent || payment.urgencyLevel == .overdue
-                                        ? AppColor.danger : AppColor.textPrimary))
+            Text(payment.amount.yen)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(payment.urgencyLevel == .urgent || payment.urgencyLevel == .overdue
+                                 ? AppColor.danger : AppColor.textPrimary)
 
-                if payment.isPaid {
-                    Button(action: { appState.unmarkPaymentAsPaid(payment) }) {
-                        HStack(spacing: 3) {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 9, weight: .bold))
-                            Text("取消")
-                                .font(.system(size: 11, weight: .semibold))
-                        }
-                        .foregroundColor(AppColor.textTertiary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(AppColor.sectionBackground)
-                        .cornerRadius(6)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(AppColor.textTertiary.opacity(0.3), lineWidth: 1)
-                        )
-                    }
-                } else {
-                    Button(action: { appState.markPaymentAsPaid(payment) }) {
-                        Text("済み")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(AppColor.secondary)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(AppColor.secondaryLight)
-                            .cornerRadius(6)
-                    }
+            // 編集・削除ボタン
+            VStack(spacing: 4) {
+                Button { editingPayment = payment } label: {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 12))
+                        .foregroundColor(AppColor.primary)
+                        .frame(width: 28, height: 28)
+                        .background(AppColor.primaryLight)
+                        .cornerRadius(7)
+                }
+                Button {
+                    appState.scheduledPayments.removeAll { $0.id == payment.id }
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 12))
+                        .foregroundColor(AppColor.caution)
+                        .frame(width: 28, height: 28)
+                        .background(AppColor.cautionLight)
+                        .cornerRadius(7)
                 }
             }
         }
         .padding(12)
-        .background(payment.isPaid ? AppColor.cardBackground
-                    : (payment.urgencyLevel == .urgent ? AppColor.dangerLight : AppColor.sectionBackground))
+        .background(payment.urgencyLevel == .urgent ? AppColor.dangerLight : AppColor.sectionBackground)
         .cornerRadius(10)
-        .opacity(payment.isPaid ? 0.6 : 1.0)
-    }
-
-    private var urgencyBadge: some View {
-        ZStack {
-            Circle()
-                .fill((payment.isPaid ? Color.gray : urgencyColor).opacity(0.15))
-                .frame(width: 40, height: 40)
-            Text(payment.category.emoji)
-                .font(.system(size: 18))
+        .sheet(item: $editingPayment) { p in
+            EditScheduledPaymentSheet(payment: p) { updated in
+                if let idx = appState.scheduledPayments.firstIndex(where: { $0.id == updated.id }) {
+                    appState.scheduledPayments[idx] = updated
+                }
+            }
         }
     }
 
     private var urgencyColor: Color {
         switch payment.urgencyLevel {
         case .overdue: return AppColor.danger
-        case .urgent: return AppColor.danger
-        case .soon: return AppColor.caution
-        case .normal: return AppColor.secondary
+        case .urgent:  return AppColor.danger
+        case .soon:    return AppColor.caution
+        case .normal:  return AppColor.secondary
         }
     }
 }

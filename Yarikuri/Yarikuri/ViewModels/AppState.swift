@@ -81,6 +81,9 @@ final class AppState: ObservableObject {
     @Published var protectActionsTotal: Int = UserDefaults.standard.integer(forKey: "protectActionsTotal")
     @Published var growActionsTotal: Int    = UserDefaults.standard.integer(forKey: "growActionsTotal")
     @Published var consecutiveLoginDays: Int = UserDefaults.standard.integer(forKey: "consecutiveLoginDays")
+    @Published var inputXpCount: Int = UserDefaults.standard.integer(forKey: "inputXpCount") {
+        didSet { UserDefaults.standard.set(inputXpCount, forKey: "inputXpCount") }
+    }
 
     // ログイン日履歴（"yyyy-MM-dd" 形式の文字列セット）
     @Published var loginDateHistory: Set<String> = {

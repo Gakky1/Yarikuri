@@ -191,7 +191,7 @@ private struct UpcomingDetailRow: View {
 }
 
 // MARK: - 変動費編集シート
-private struct EditScheduledPaymentSheet: View {
+struct EditScheduledPaymentSheet: View {
     @Environment(\.dismiss) private var dismiss
     let payment: ScheduledPayment
     let onSave: (ScheduledPayment) -> Void

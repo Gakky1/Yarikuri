@@ -385,27 +385,15 @@ struct FixedExpenseView: View {
                                     }
                                     .buttonStyle(.plain)
 
-                                    VStack(spacing: 6) {
-                                        Button {
-                                            editingExpense = expense
-                                        } label: {
-                                            Image(systemName: "pencil")
-                                                .font(.system(size: 13))
-                                                .foregroundColor(AppColor.primary)
-                                                .frame(width: 32, height: 32)
-                                                .background(AppColor.primaryLight)
-                                                .cornerRadius(8)
-                                        }
-                                        Button {
-                                            appState.fixedExpenses.removeAll { $0.id == expense.id }
-                                        } label: {
-                                            Image(systemName: "trash")
-                                                .font(.system(size: 13))
-                                                .foregroundColor(AppColor.caution)
-                                                .frame(width: 32, height: 32)
-                                                .background(AppColor.cautionLight)
-                                                .cornerRadius(8)
-                                        }
+                                    Button {
+                                        editingExpense = expense
+                                    } label: {
+                                        Image(systemName: "pencil")
+                                            .font(.system(size: 13))
+                                            .foregroundColor(AppColor.primary)
+                                            .frame(width: 32, height: 32)
+                                            .background(AppColor.primaryLight)
+                                            .cornerRadius(8)
                                     }
                                 }
                             }

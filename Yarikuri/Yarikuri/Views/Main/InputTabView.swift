@@ -4,15 +4,27 @@ import SwiftUI
 struct InputTabView: View {
     @EnvironmentObject var appState: AppState
     @State private var selectedInputTab: InputTab = .expense
+    @State private var levelUpTrigger = false
+    @State private var prevInputLevel: Int = 1
 
     enum InputTab { case expense, income }
+
+    private var inputLevel: Int {
+        switch appState.inputXpCount {
+        case 0..<3:   return 1
+        case 3..<7:   return 2
+        case 7..<13:  return 3
+        case 13..<21: return 4
+        default:      return 5
+        }
+    }
 
     var body: some View {
         ZStack {
             AppColor.background.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
-                    // ヘッダー（HomeViewと同じ構造: VStack 12pt + HStack 8pt = 20pt）
+                    // ヘッダー
                     HStack {
                         Text("入力")
                             .font(.system(size: 26, weight: .bold))
@@ -20,6 +32,13 @@ struct InputTabView: View {
                         Spacer()
                     }
                     .padding(.top, 8)
+
+                    // やりくりんマスコット
+                    InputMascotBanner(
+                        level: inputLevel,
+                        xpCount: appState.inputXpCount,
+                        levelUpTrigger: levelUpTrigger
+                    )
 
                     // セグメント切り替え
                     Picker("", selection: $selectedInputTab) {
@@ -29,13 +48,163 @@ struct InputTabView: View {
                     .pickerStyle(.segmented)
 
                     if selectedInputTab == .expense {
-                        ExpenseInputForm()
+                        ExpenseInputForm(onSaved: handleSaved)
                     } else {
-                        IncomeInputForm()
+                        IncomeInputForm(onSaved: handleSaved)
                     }
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
+            }
+        }
+        .onAppear { prevInputLevel = inputLevel }
+    }
+
+    private func handleSaved() {
+        let old = inputLevel
+        appState.inputXpCount += 1
+        let new = inputLevel
+        if new > old {
+            levelUpTrigger = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                levelUpTrigger = false
+            }
+        }
+    }
+}
+
+// MARK: - 入力タブ用マスコットバナー
+private struct InputMascotBanner: View {
+    let level: Int
+    let xpCount: Int
+    let levelUpTrigger: Bool
+
+    @State private var bounce: CGFloat = 0
+    @State private var starScale: CGFloat = 0
+    @State private var starOpacity: Double = 0
+
+    private var nextLevelAt: Int {
+        switch level {
+        case 1: return 3
+        case 2: return 7
+        case 3: return 13
+        case 4: return 21
+        default: return 21
+        }
+    }
+
+    private var prevLevelAt: Int {
+        switch level {
+        case 1: return 0
+        case 2: return 3
+        case 3: return 7
+        case 4: return 13
+        default: return 21
+        }
+    }
+
+    private var progressRatio: Double {
+        guard level < 5 else { return 1.0 }
+        let span = Double(nextLevelAt - prevLevelAt)
+        let progress = Double(xpCount - prevLevelAt)
+        return min(1.0, max(0.0, progress / span))
+    }
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 18)
+                .fill(LinearGradient(
+                    colors: [AppColor.primaryLight, AppColor.accentLight],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                ))
+
+            HStack(spacing: 14) {
+                // やりくりん
+                CoronView(size: 56, emotion: level >= 4 ? .happy : .normal, animate: true, level: level)
+                    .frame(width: 72, height: 66)
+                    .offset(y: bounce)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    // 名前 + レベルバッジ
+                    HStack(spacing: 8) {
+                        Text("やりくりん")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(AppColor.textPrimary)
+                        Text("Lv.\(level)")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 2)
+                            .background(AppColor.primary)
+                            .cornerRadius(8)
+                    }
+
+                    // プログレスバー
+                    if level < 5 {
+                        VStack(alignment: .leading, spacing: 3) {
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 3)
+                                        .fill(AppColor.primary.opacity(0.15))
+                                        .frame(height: 7)
+                                    RoundedRectangle(cornerRadius: 3)
+                                        .fill(LinearGradient(
+                                            colors: [AppColor.primary, AppColor.accent],
+                                            startPoint: .leading, endPoint: .trailing
+                                        ))
+                                        .frame(width: geo.size.width * progressRatio, height: 7)
+                                        .animation(.spring(response: 0.5), value: progressRatio)
+                                }
+                            }
+                            .frame(height: 7)
+                            Text("入力するたびにポイントが溜まるよ！ あと \(max(0, nextLevelAt - xpCount)) 回でLv.\(level + 1)")
+                                .font(.system(size: 10))
+                                .foregroundColor(AppColor.textSecondary)
+                        }
+                    } else {
+                        Text("🏆 入力マスター達成！")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(AppColor.primary)
+                    }
+                }
+
+                Spacer()
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+
+            // Lv.UP エフェクト
+            if levelUpTrigger {
+                VStack(spacing: 4) {
+                    Text("⭐️ Lv.\(level) に UP！")
+                        .font(.system(size: 15, weight: .black))
+                        .foregroundColor(AppColor.primary)
+                        .shadow(color: AppColor.primary.opacity(0.3), radius: 4)
+                }
+                .scaleEffect(starScale)
+                .opacity(starOpacity)
+            }
+        }
+        .frame(height: 110)
+        .shadow(color: AppColor.shadowColor, radius: 5, x: 0, y: 2)
+        .onChange(of: levelUpTrigger) { triggered in
+            if triggered {
+                // バウンス
+                withAnimation(.spring(response: 0.18, dampingFraction: 0.4)) { bounce = -16 }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.45)) { bounce = 0 }
+                }
+                // スター表示
+                withAnimation(.spring(response: 0.3)) {
+                    starScale = 1.0; starOpacity = 1.0
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+                    withAnimation(.easeOut(duration: 0.5)) {
+                        starOpacity = 0; starScale = 1.3
+                    }
+                }
+            } else {
+                starScale = 0; starOpacity = 0
             }
         }
     }
@@ -44,6 +213,7 @@ struct InputTabView: View {
 // MARK: - 支出入力フォーム
 private struct ExpenseInputForm: View {
     @EnvironmentObject var appState: AppState
+    var onSaved: (() -> Void)? = nil
 
     enum ExpenseType { case fixed, variable }
     @State private var expenseType: ExpenseType = .variable
@@ -233,6 +403,7 @@ private struct ExpenseInputForm: View {
             fixBillingDay = 1; fixIsSubscription = false
         }
         saved = true
+        onSaved?()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { saved = false }
     }
 }
@@ -240,6 +411,7 @@ private struct ExpenseInputForm: View {
 // MARK: - 収入入力フォーム
 private struct IncomeInputForm: View {
     @EnvironmentObject var appState: AppState
+    var onSaved: (() -> Void)? = nil
 
     @State private var incomeName = ""
     @State private var amountText = ""
@@ -329,6 +501,7 @@ private struct IncomeInputForm: View {
         incomeName = ""; amountText = ""; category = .salary
         selectedDate = Date(); noteText = ""
         saved = true
+        onSaved?()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { saved = false }
     }
 }
