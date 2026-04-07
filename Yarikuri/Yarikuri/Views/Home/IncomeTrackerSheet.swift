@@ -59,15 +59,10 @@ struct IncomeTrackerSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // ── サマリーカード（最上部） ────────
                     if !appState.incomeHistory.isEmpty {
                         summarySection
                     }
-
-                    // ── グラフ ──────────────────────────
                     chartSection
-
-                    // ── 履歴 ──────────────────────────
                     if !appState.incomeHistory.isEmpty {
                         historySection
                     }
@@ -91,12 +86,11 @@ struct IncomeTrackerSheet: View {
                 }
             }
             .sheet(isPresented: $showAddIncome) {
-                AddIncomeSheet { year, month, amount, note in
-                    if let idx = appState.incomeHistory.firstIndex(where: { $0.year == year && $0.month == month }) {
-                        appState.incomeHistory[idx].amount = amount
-                        appState.incomeHistory[idx].note = note
+                AddIncomeSheet { record in
+                    if let idx = appState.incomeHistory.firstIndex(where: { $0.year == record.year && $0.month == record.month }) {
+                        appState.incomeHistory[idx] = record
                     } else {
-                        appState.incomeHistory.append(IncomeRecord(year: year, month: month, amount: amount, note: note))
+                        appState.incomeHistory.append(record)
                     }
                 }
             }
@@ -163,7 +157,6 @@ struct IncomeTrackerSheet: View {
                 }
             }
 
-            // タップ時情報表示（固定高さ）
             ZStack {
                 if let month = selectedChartMonth {
                     HStack(spacing: 12) {
@@ -199,7 +192,6 @@ struct IncomeTrackerSheet: View {
             .frame(height: 50)
 
             if incomeChartPoints.isEmpty {
-                // データなし時のプレースホルダー
                 VStack(spacing: 8) {
                     Image(systemName: "chart.line.uptrend.xyaxis")
                         .font(.system(size: 36))
@@ -324,38 +316,53 @@ struct IncomeTrackerSheet: View {
             VStack(spacing: 1) {
                 ForEach(appState.incomeHistory.sorted {
                     if $0.year != $1.year { return $0.year > $1.year }
-                    return $0.month > $1.month
+                    if $0.month != $1.month { return $0.month > $1.month }
+                    return $0.day > $1.day
                 }) { record in
-                    HStack {
+                    HStack(spacing: 10) {
+                        // カテゴリ絵文字
+                        Text(record.category.emoji)
+                            .font(.system(size: 24))
+                            .frame(width: 36)
+
+                        // 名前・日付・メモ
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(record.displayLabel)
+                            Text(record.name.isEmpty ? record.category.displayText : record.name)
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(AppColor.textPrimary)
+                            Text("\(record.year)年\(record.month)月\(record.day)日・\(record.category.displayText)")
+                                .font(.system(size: 11))
+                                .foregroundColor(AppColor.textTertiary)
                             if !record.note.isEmpty {
                                 Text(record.note)
                                     .font(.system(size: 11))
                                     .foregroundColor(AppColor.textTertiary)
                             }
                         }
+
                         Spacer()
-                        Text("¥\(record.amount.formattedYen)")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(AppColor.textPrimary)
-                        Button(action: { recordToEdit = record }) {
-                            Image(systemName: "pencil")
-                                .font(.system(size: 13))
-                                .foregroundColor(AppColor.primary)
+
+                        // 金額 + 操作ボタン
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Text("¥\(record.amount.formattedYen)")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(AppColor.textPrimary)
+                            HStack(spacing: 8) {
+                                Button(action: { recordToEdit = record }) {
+                                    Image(systemName: "pencil")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(AppColor.primary)
+                                }
+                                Button(action: {
+                                    recordToDelete = record
+                                    showingDeleteAlert = true
+                                }) {
+                                    Image(systemName: "trash")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(AppColor.danger)
+                                }
+                            }
                         }
-                        .padding(.leading, 12)
-                        Button(action: {
-                            recordToDelete = record
-                            showingDeleteAlert = true
-                        }) {
-                            Image(systemName: "trash")
-                                .font(.system(size: 13))
-                                .foregroundColor(AppColor.danger)
-                        }
-                        .padding(.leading, 8)
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
@@ -378,16 +385,15 @@ struct IncomeTrackerSheet: View {
             Button("キャンセル", role: .cancel) {}
         } message: {
             if let r = recordToDelete {
-                Text("\(r.displayLabel)の収入記録を削除します")
+                Text("\(r.year)年\(r.month)月\(r.day)日の収入記録を削除します")
             }
         }
     }
-
 }
 
 // MARK: - 収入追加シート
 private struct AddIncomeSheet: View {
-    let onSave: (Int, Int, Int, String) -> Void
+    let onSave: (IncomeRecord) -> Void
     @Environment(\.dismiss) private var dismiss
 
     private var years: [Int] {
@@ -395,62 +401,62 @@ private struct AddIncomeSheet: View {
         return Array((current - 5)...current).reversed()
     }
 
-    @State private var selectedYear: Int = Calendar.current.component(.year, from: Date())
+    @State private var selectedYear:  Int = Calendar.current.component(.year,  from: Date())
     @State private var selectedMonth: Int = Calendar.current.component(.month, from: Date())
-    @State private var amountText: String = ""
-    @State private var noteText: String = ""
+    @State private var selectedDay:   Int = Calendar.current.component(.day,   from: Date())
+    @State private var nameText:      String = ""
+    @State private var amountText:    String = ""
+    @State private var category:      IncomeCategory = .salary
+    @State private var noteText:      String = ""
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
-                HStack(spacing: 10) {
+            Form {
+                Section("基本情報") {
+                    TextField("収入の名前（例：4月分給与）", text: $nameText)
+                    HStack {
+                        Text("¥").foregroundColor(AppColor.primary).fontWeight(.bold)
+                        TextField("手取り金額", text: $amountText)
+                            .keyboardType(.numberPad)
+                    }
+                    Picker("カテゴリ", selection: $category) {
+                        ForEach(IncomeCategory.allCases, id: \.rawValue) { cat in
+                            Text(cat.emoji + " " + cat.displayText).tag(cat)
+                        }
+                    }
+                }
+                Section("日付") {
                     Picker("年", selection: $selectedYear) {
                         ForEach(years, id: \.self) { year in
                             Text(String(year) + "年").tag(year)
                         }
                     }
-                    .pickerStyle(.menu)
-                    .tint(AppColor.primary)
-                    .padding(.horizontal, 10).padding(.vertical, 8)
-                    .background(AppColor.cardBackground).cornerRadius(10)
-
                     Picker("月", selection: $selectedMonth) {
                         ForEach(1...12, id: \.self) { month in
                             Text("\(month)月").tag(month)
                         }
                     }
-                    .pickerStyle(.menu)
-                    .tint(AppColor.primary)
-                    .padding(.horizontal, 10).padding(.vertical, 8)
-                    .background(AppColor.cardBackground).cornerRadius(10)
+                    Picker("日", selection: $selectedDay) {
+                        ForEach(1...31, id: \.self) { day in
+                            Text("\(day)日").tag(day)
+                        }
+                    }
                 }
-
-                HStack {
-                    Text("¥").font(.system(size: 18, weight: .bold)).foregroundColor(AppColor.primary)
-                    TextField("手取り収入を入力", text: $amountText)
-                        .keyboardType(.numberPad)
-                        .font(.system(size: 18, weight: .semibold))
+                Section("メモ") {
+                    TextField("任意", text: $noteText)
                 }
-                .padding(.horizontal, 14).padding(.vertical, 12)
-                .background(AppColor.cardBackground).cornerRadius(12)
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColor.primary.opacity(0.3), lineWidth: 1))
-
-                TextField("メモ（任意）", text: $noteText)
-                    .font(.system(size: 14))
-                    .padding(.horizontal, 14).padding(.vertical, 10)
-                    .background(AppColor.cardBackground).cornerRadius(12)
-
-                Spacer()
             }
-            .padding(20)
-            .background(AppColor.background.ignoresSafeArea())
             .navigationTitle("収入を入力")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("保存") {
                         guard let amount = Int(amountText.filter { $0.isNumber }), amount > 0 else { return }
-                        onSave(selectedYear, selectedMonth, amount, noteText)
+                        let record = IncomeRecord(
+                            year: selectedYear, month: selectedMonth, day: selectedDay,
+                            amount: amount, name: nameText, category: category, note: noteText
+                        )
+                        onSave(record)
                         dismiss()
                     }
                     .foregroundColor(amountText.isEmpty ? AppColor.textTertiary : AppColor.primary)
@@ -470,14 +476,20 @@ private struct IncomeEditSheet: View {
     let onSave: (IncomeRecord) -> Void
     @Environment(\.dismiss) private var dismiss
 
-    @State private var amountText: String
-    @State private var noteText: String
+    @State private var nameText:     String
+    @State private var amountText:   String
+    @State private var category:     IncomeCategory
+    @State private var selectedDay:  Int
+    @State private var noteText:     String
 
     init(record: IncomeRecord, onSave: @escaping (IncomeRecord) -> Void) {
         self.record = record
         self.onSave = onSave
-        _amountText = State(initialValue: "\(record.amount)")
-        _noteText   = State(initialValue: record.note)
+        _nameText    = State(initialValue: record.name)
+        _amountText  = State(initialValue: "\(record.amount)")
+        _category    = State(initialValue: record.category)
+        _selectedDay = State(initialValue: record.day)
+        _noteText    = State(initialValue: record.note)
     }
 
     private var canSave: Bool {
@@ -486,44 +498,37 @@ private struct IncomeEditSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
-                // 年月ラベル（変更不可）
-                HStack {
-                    Text(record.displayLabel)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(AppColor.textPrimary)
-                    Spacer()
+            Form {
+                Section("基本情報") {
+                    // 年月は変更不可（識別子）
+                    HStack {
+                        Text("年月").foregroundColor(AppColor.textSecondary)
+                        Spacer()
+                        Text(record.displayLabel).foregroundColor(AppColor.textTertiary)
+                    }
+                    TextField("収入の名前", text: $nameText)
+                    HStack {
+                        Text("¥").foregroundColor(AppColor.primary).fontWeight(.bold)
+                        TextField("手取り金額", text: $amountText)
+                            .keyboardType(.numberPad)
+                    }
+                    Picker("カテゴリ", selection: $category) {
+                        ForEach(IncomeCategory.allCases, id: \.rawValue) { cat in
+                            Text(cat.emoji + " " + cat.displayText).tag(cat)
+                        }
+                    }
                 }
-
-                // 金額
-                HStack {
-                    Text("¥")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(AppColor.primary)
-                    TextField("手取り収入を入力", text: $amountText)
-                        .keyboardType(.numberPad)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(AppColor.textPrimary)
+                Section("日付") {
+                    Picker("日", selection: $selectedDay) {
+                        ForEach(1...31, id: \.self) { day in
+                            Text("\(day)日").tag(day)
+                        }
+                    }
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .background(AppColor.cardBackground)
-                .cornerRadius(12)
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColor.primary.opacity(0.3), lineWidth: 1))
-
-                // メモ
-                TextField("メモ（任意）", text: $noteText)
-                    .font(.system(size: 14))
-                    .foregroundColor(AppColor.textPrimary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(AppColor.cardBackground)
-                    .cornerRadius(12)
-
-                Spacer()
+                Section("メモ") {
+                    TextField("任意", text: $noteText)
+                }
             }
-            .padding(20)
-            .background(AppColor.background.ignoresSafeArea())
             .navigationTitle("収入を編集")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -531,8 +536,11 @@ private struct IncomeEditSheet: View {
                     Button("保存") {
                         guard let amount = Int(amountText.filter { $0.isNumber }), amount > 0 else { return }
                         var updated = record
-                        updated.amount = amount
-                        updated.note = noteText
+                        updated.name     = nameText
+                        updated.amount   = amount
+                        updated.category = category
+                        updated.day      = selectedDay
+                        updated.note     = noteText
                         onSave(updated)
                         dismiss()
                     }
