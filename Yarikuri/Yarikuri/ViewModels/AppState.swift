@@ -85,6 +85,22 @@ final class AppState: ObservableObject {
         didSet { UserDefaults.standard.set(inputXpCount, forKey: "inputXpCount") }
     }
 
+    // MARK: - レイアウトカスタマイズ（支出を減らす・収入を増やす）
+    @Published var protectCardOrder: [String] = UserDefaults.standard.stringArray(forKey: "protectCardOrder")
+        ?? ["fixedExpense", "variablePayment", "debtNavi", "support", "howTo", "secret"] {
+        didSet { UserDefaults.standard.set(protectCardOrder, forKey: "protectCardOrder") }
+    }
+    @Published var protectHiddenCards: Set<String> = Set(UserDefaults.standard.stringArray(forKey: "protectHiddenCards") ?? []) {
+        didSet { UserDefaults.standard.set(Array(protectHiddenCards), forKey: "protectHiddenCards") }
+    }
+    @Published var growCardOrder: [String] = UserDefaults.standard.stringArray(forKey: "growCardOrder")
+        ?? ["income", "fukugyou", "nisa", "setsuzei", "career", "master"] {
+        didSet { UserDefaults.standard.set(growCardOrder, forKey: "growCardOrder") }
+    }
+    @Published var growHiddenCards: Set<String> = Set(UserDefaults.standard.stringArray(forKey: "growHiddenCards") ?? []) {
+        didSet { UserDefaults.standard.set(Array(growHiddenCards), forKey: "growHiddenCards") }
+    }
+
     // ログイン日履歴（"yyyy-MM-dd" 形式の文字列セット）
     @Published var loginDateHistory: Set<String> = {
         let arr = UserDefaults.standard.stringArray(forKey: "loginDateHistory") ?? []

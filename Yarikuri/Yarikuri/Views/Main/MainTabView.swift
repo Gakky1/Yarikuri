@@ -169,6 +169,11 @@ struct ProtectScreenView: View {
     @State private var showSupport       = false
     @State private var showHowTo         = false
     @State private var showSecret        = false
+    @State private var showLayoutEdit    = false
+
+    private var visibleProtectCards: [String] {
+        appState.protectCardOrder.filter { !appState.protectHiddenCards.contains($0) }
+    }
 
     var body: some View {
         ZStack {
@@ -180,11 +185,17 @@ struct ProtectScreenView: View {
                             .font(.system(size: 26, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
                         Spacer()
+                        Button(action: { showLayoutEdit = true }) {
+                            Image(systemName: "slider.horizontal.3")
+                                .font(.system(size: 18))
+                                .foregroundColor(AppColor.primary)
+                        }
                         Button(action: { showReport = true }) {
                             Image(systemName: "chart.bar.fill")
                                 .font(.system(size: 20))
                                 .foregroundColor(AppColor.primary)
                         }
+                        .padding(.leading, 10)
                     }
                     .padding(.top, 8)
 
@@ -192,50 +203,9 @@ struct ProtectScreenView: View {
                     ProtectAnimationView()
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                        ProtectNavCard(
-                            emoji: "📋",
-                            title: "固定費",
-                            subtitle: appState.fixedExpenses.isEmpty ? "未登録" : appState.totalFixedExpenses.yen,
-                            color: AppColor.primary,
-                            action: { showFixedExpense = true }
-                        )
-                        ProtectNavCard(
-                            emoji: "📅",
-                            title: "今月の変動費",
-                            subtitle: appState.scheduledPaymentsThisMonth.isEmpty ? "支払いなし" : appState.totalScheduledPayments.yen,
-                            color: AppColor.caution,
-                            action: { showPayment = true }
-                        )
-                        ProtectNavCard(
-                            emoji: "💳",
-                            title: "借金返済ナビ",
-                            subtitle: appState.debts.isEmpty ? "借入なし" : "月返済額 \(appState.debts.reduce(0){ $0 + $1.monthlyPayment }.yen)",
-                            color: AppColor.danger,
-                            action: { showDebtNavi = true }
-                        )
-                        ProtectNavCard(
-                            emoji: "🤝",
-                            title: "使える制度・給付",
-                            subtitle: "補助金・公的支援を確認",
-                            color: Color(red: 0.18, green: 0.62, blue: 0.35),
-                            action: { showSupport = true }
-                        )
-                        ProtectNavCard(
-                            emoji: "🛡️",
-                            title: "支出の減らし方",
-                            subtitle: "節約・支出削減の知識",
-                            color: AppColor.secondary,
-                            action: { showHowTo = true }
-                        )
-                        LockedNavCard(
-                            unlockedEmoji: "🔑",
-                            unlockedTitle: "節約裏ワザ集",
-                            unlockedSubtitle: "知らないと損する節約術",
-                            unlockedColor: Color(red: 0.85, green: 0.55, blue: 0.10),
-                            currentDays: appState.consecutiveLoginDays,
-                            action: { showSecret = true }
-                        )
-                        .gridCellColumns(2)
+                        ForEach(visibleProtectCards, id: \.self) { cardId in
+                            protectNavCardView(for: cardId)
+                        }
                     }
 
                     Spacer().frame(height: 20)
@@ -251,6 +221,60 @@ struct ProtectScreenView: View {
         .sheet(isPresented: $showSupport)      { SupportSystemView() }
         .sheet(isPresented: $showHowTo)        { ProtectHowToSheet() }
         .sheet(isPresented: $showSecret)       { ProtectSecretSheet() }
+        .sheet(isPresented: $showLayoutEdit)   { ProtectLayoutEditSheet().environmentObject(appState) }
+    }
+
+    @ViewBuilder
+    private func protectNavCardView(for id: String) -> some View {
+        switch id {
+        case "fixedExpense":
+            ProtectNavCard(
+                emoji: "📋", title: "固定費",
+                subtitle: appState.fixedExpenses.isEmpty ? "未登録" : appState.totalFixedExpenses.yen,
+                color: AppColor.primary,
+                action: { showFixedExpense = true }
+            )
+        case "variablePayment":
+            ProtectNavCard(
+                emoji: "📅", title: "今月の変動費",
+                subtitle: appState.scheduledPaymentsThisMonth.isEmpty ? "支払いなし" : appState.totalScheduledPayments.yen,
+                color: AppColor.caution,
+                action: { showPayment = true }
+            )
+        case "debtNavi":
+            ProtectNavCard(
+                emoji: "💳", title: "借金返済ナビ",
+                subtitle: appState.debts.isEmpty ? "借入なし" : "月返済額 \(appState.debts.reduce(0){ $0 + $1.monthlyPayment }.yen)",
+                color: AppColor.danger,
+                action: { showDebtNavi = true }
+            )
+        case "support":
+            ProtectNavCard(
+                emoji: "🤝", title: "使える制度・給付",
+                subtitle: "補助金・公的支援を確認",
+                color: Color(red: 0.18, green: 0.62, blue: 0.35),
+                action: { showSupport = true }
+            )
+        case "howTo":
+            ProtectNavCard(
+                emoji: "🛡️", title: "支出の減らし方",
+                subtitle: "節約・支出削減の知識",
+                color: AppColor.secondary,
+                action: { showHowTo = true }
+            )
+        case "secret":
+            LockedNavCard(
+                unlockedEmoji: "🔑",
+                unlockedTitle: "節約裏ワザ集",
+                unlockedSubtitle: "知らないと損する節約術",
+                unlockedColor: Color(red: 0.85, green: 0.55, blue: 0.10),
+                currentDays: appState.consecutiveLoginDays,
+                action: { showSecret = true }
+            )
+            .gridCellColumns(2)
+        default:
+            EmptyView()
+        }
     }
 }
 
@@ -327,8 +351,12 @@ struct GrowScreenView: View {
     @State private var showCareer      = false
     @State private var showSetsuzei    = false
     @State private var showNisa        = false
-
     @State private var showMaster      = false
+    @State private var showLayoutEdit  = false
+
+    private var visibleGrowCards: [String] {
+        appState.growCardOrder.filter { !appState.growHiddenCards.contains($0) }
+    }
 
     var body: some View {
         ZStack {
@@ -340,11 +368,17 @@ struct GrowScreenView: View {
                             .font(.system(size: 26, weight: .bold))
                             .foregroundColor(AppColor.textPrimary)
                         Spacer()
+                        Button(action: { showLayoutEdit = true }) {
+                            Image(systemName: "slider.horizontal.3")
+                                .font(.system(size: 18))
+                                .foregroundColor(AppColor.primary)
+                        }
                         Button(action: { showReport = true }) {
                             Image(systemName: "chart.bar.fill")
                                 .font(.system(size: 20))
                                 .foregroundColor(AppColor.primary)
                         }
+                        .padding(.leading, 10)
                     }
                     .padding(.top, 8)
 
@@ -352,34 +386,9 @@ struct GrowScreenView: View {
                     GrowAnimationView()
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                        GrowNavCard(emoji: "💴", title: "収入",
-                                    subtitle: incomeSubtitle,
-                                    color: Color.green.opacity(0.8),
-                                    action: { showIncome = true })
-                        GrowNavCard(emoji: "🎥", title: "副業で稼ぐ",
-                                    subtitle: "YouTube・クラウド等9種",
-                                    color: Color.red.opacity(0.75),
-                                    action: { showFukugyou = true })
-                        GrowNavCard(emoji: "🌱", title: "NISA・投資",
-                                    subtitle: "積立・成長投資枠等",
-                                    color: Color(red: 0.18, green: 0.62, blue: 0.35),
-                                    action: { showNisa = true })
-                        GrowNavCard(emoji: "🏯", title: "節税",
-                                    subtitle: "ふるさと納税・iDeCo等",
-                                    color: Color.orange.opacity(0.85),
-                                    action: { showSetsuzei = true })
-                        GrowNavCard(emoji: "🏢", title: "キャリア・転職",
-                                    subtitle: "転職・資格・独立",
-                                    color: Color.indigo.opacity(0.8),
-                                    action: { showCareer = true })
-                        LockedNavCard(
-                            unlockedEmoji: "👑",
-                            unlockedTitle: "マネーマスター術",
-                            unlockedSubtitle: "上級者向けのお金の増やし方",
-                            unlockedColor: Color(red: 0.55, green: 0.30, blue: 0.90),
-                            currentDays: appState.consecutiveLoginDays,
-                            action: { showMaster = true }
-                        )
+                        ForEach(visibleGrowCards, id: \.self) { cardId in
+                            growNavCardView(for: cardId)
+                        }
                     }
 
                     Spacer().frame(height: 20)
@@ -388,14 +397,56 @@ struct GrowScreenView: View {
                 .padding(.top, 12)
             }
         }
-        .sheet(isPresented: $showReport)     { MonthlyReportView() }
-        .sheet(isPresented: $showIncome)     { IncomeTrackerSheet() }
-        .sheet(isPresented: $showFukugyou)   { GrowFukugyouSheet() }
-        .sheet(isPresented: $showCareer)     { GrowCareerSheet() }
-        .sheet(isPresented: $showSetsuzei)   { GrowSetsuzeiSheet() }
-        .sheet(isPresented: $showNisa)       { GrowNisaSheet() }
+        .sheet(isPresented: $showReport)       { MonthlyReportView() }
+        .sheet(isPresented: $showIncome)       { IncomeTrackerSheet() }
+        .sheet(isPresented: $showFukugyou)     { GrowFukugyouSheet() }
+        .sheet(isPresented: $showCareer)       { GrowCareerSheet() }
+        .sheet(isPresented: $showSetsuzei)     { GrowSetsuzeiSheet() }
+        .sheet(isPresented: $showNisa)         { GrowNisaSheet() }
+        .sheet(isPresented: $showMaster)       { GrowMasterSheet() }
+        .sheet(isPresented: $showLayoutEdit)   { GrowLayoutEditSheet().environmentObject(appState) }
+    }
 
-        .sheet(isPresented: $showMaster)     { GrowMasterSheet() }
+    @ViewBuilder
+    private func growNavCardView(for id: String) -> some View {
+        switch id {
+        case "income":
+            GrowNavCard(emoji: "💴", title: "収入",
+                        subtitle: incomeSubtitle,
+                        color: Color.green.opacity(0.8),
+                        action: { showIncome = true })
+        case "fukugyou":
+            GrowNavCard(emoji: "🎥", title: "副業で稼ぐ",
+                        subtitle: "YouTube・クラウド等9種",
+                        color: Color.red.opacity(0.75),
+                        action: { showFukugyou = true })
+        case "nisa":
+            GrowNavCard(emoji: "🌱", title: "NISA・投資",
+                        subtitle: "積立・成長投資枠等",
+                        color: Color(red: 0.18, green: 0.62, blue: 0.35),
+                        action: { showNisa = true })
+        case "setsuzei":
+            GrowNavCard(emoji: "🏯", title: "節税",
+                        subtitle: "ふるさと納税・iDeCo等",
+                        color: Color.orange.opacity(0.85),
+                        action: { showSetsuzei = true })
+        case "career":
+            GrowNavCard(emoji: "🏢", title: "キャリア・転職",
+                        subtitle: "転職・資格・独立",
+                        color: Color.indigo.opacity(0.8),
+                        action: { showCareer = true })
+        case "master":
+            LockedNavCard(
+                unlockedEmoji: "👑",
+                unlockedTitle: "マネーマスター術",
+                unlockedSubtitle: "上級者向けのお金の増やし方",
+                unlockedColor: Color(red: 0.55, green: 0.30, blue: 0.90),
+                currentDays: appState.consecutiveLoginDays,
+                action: { showMaster = true }
+            )
+        default:
+            EmptyView()
+        }
     }
 
     private var incomeSubtitle: String {
@@ -793,6 +844,164 @@ private struct LockedNavCard: View {
                 shimmerPhase = 1.5
             }
         }
+    }
+}
+
+// MARK: - 支出を減らすタブ レイアウト編集シート
+private struct ProtectLayoutEditSheet: View {
+    @EnvironmentObject var appState: AppState
+    @Environment(\.dismiss) var dismiss
+    @State private var order: [String] = []
+    @State private var hidden: Set<String> = []
+
+    private let allCards: [(id: String, emoji: String, name: String, locked: Bool)] = [
+        ("fixedExpense",    "📋", "固定費",          false),
+        ("variablePayment", "📅", "今月の変動費",     false),
+        ("debtNavi",        "💳", "借金返済ナビ",     false),
+        ("support",         "🤝", "使える制度・給付", false),
+        ("howTo",           "🛡️", "支出の減らし方",   false),
+        ("secret",          "🔑", "節約裏ワザ集",     true),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(order, id: \.self) { cardId in
+                        if let card = allCards.first(where: { $0.id == cardId }) {
+                            HStack(spacing: 14) {
+                                Button { toggle(cardId) } label: {
+                                    Image(systemName: hidden.contains(cardId) ? "eye.slash" : "eye")
+                                        .font(.system(size: 17))
+                                        .foregroundColor(hidden.contains(cardId) ? AppColor.textTertiary : AppColor.primary)
+                                        .frame(width: 28, height: 28)
+                                }
+                                .buttonStyle(.plain)
+
+                                Text(card.emoji).font(.system(size: 20))
+
+                                Text(card.name)
+                                    .font(.system(size: 15))
+                                    .foregroundColor(hidden.contains(cardId) ? AppColor.textTertiary : AppColor.textPrimary)
+
+                                Spacer()
+
+                                if card.locked {
+                                    Text("🔒").font(.system(size: 13))
+                                }
+                            }
+                        }
+                    }
+                    .onMove { from, to in order.move(fromOffsets: from, toOffset: to) }
+                } header: {
+                    Text("≡ で並び替え・👁 で表示/非表示を切り替え")
+                        .font(.system(size: 12))
+                }
+            }
+            .environment(\.editMode, .constant(.active))
+            .navigationTitle("レイアウトを編集")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("保存") {
+                        appState.protectCardOrder = order
+                        appState.protectHiddenCards = hidden
+                        dismiss()
+                    }
+                    .foregroundColor(AppColor.primary)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("キャンセル") { dismiss() }
+                }
+            }
+            .onAppear {
+                order = appState.protectCardOrder
+                hidden = appState.protectHiddenCards
+            }
+        }
+    }
+
+    private func toggle(_ id: String) {
+        if hidden.contains(id) { hidden.remove(id) } else { hidden.insert(id) }
+    }
+}
+
+// MARK: - 収入を増やすタブ レイアウト編集シート
+private struct GrowLayoutEditSheet: View {
+    @EnvironmentObject var appState: AppState
+    @Environment(\.dismiss) var dismiss
+    @State private var order: [String] = []
+    @State private var hidden: Set<String> = []
+
+    private let allCards: [(id: String, emoji: String, name: String, locked: Bool)] = [
+        ("income",    "💴", "収入",           false),
+        ("fukugyou",  "🎥", "副業で稼ぐ",     false),
+        ("nisa",      "🌱", "NISA・投資",     false),
+        ("setsuzei",  "🏯", "節税",           false),
+        ("career",    "🏢", "キャリア・転職", false),
+        ("master",    "👑", "マネーマスター術", true),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(order, id: \.self) { cardId in
+                        if let card = allCards.first(where: { $0.id == cardId }) {
+                            HStack(spacing: 14) {
+                                Button { toggle(cardId) } label: {
+                                    Image(systemName: hidden.contains(cardId) ? "eye.slash" : "eye")
+                                        .font(.system(size: 17))
+                                        .foregroundColor(hidden.contains(cardId) ? AppColor.textTertiary : AppColor.primary)
+                                        .frame(width: 28, height: 28)
+                                }
+                                .buttonStyle(.plain)
+
+                                Text(card.emoji).font(.system(size: 20))
+
+                                Text(card.name)
+                                    .font(.system(size: 15))
+                                    .foregroundColor(hidden.contains(cardId) ? AppColor.textTertiary : AppColor.textPrimary)
+
+                                Spacer()
+
+                                if card.locked {
+                                    Text("🔒").font(.system(size: 13))
+                                }
+                            }
+                        }
+                    }
+                    .onMove { from, to in order.move(fromOffsets: from, toOffset: to) }
+                } header: {
+                    Text("≡ で並び替え・👁 で表示/非表示を切り替え")
+                        .font(.system(size: 12))
+                }
+            }
+            .environment(\.editMode, .constant(.active))
+            .navigationTitle("レイアウトを編集")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("保存") {
+                        appState.growCardOrder = order
+                        appState.growHiddenCards = hidden
+                        dismiss()
+                    }
+                    .foregroundColor(AppColor.primary)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("キャンセル") { dismiss() }
+                }
+            }
+            .onAppear {
+                order = appState.growCardOrder
+                hidden = appState.growHiddenCards
+            }
+        }
+    }
+
+    private func toggle(_ id: String) {
+        if hidden.contains(id) { hidden.remove(id) } else { hidden.insert(id) }
     }
 }
 
