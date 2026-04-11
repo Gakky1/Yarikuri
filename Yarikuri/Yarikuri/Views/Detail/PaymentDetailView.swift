@@ -264,9 +264,9 @@ struct PaymentDetailView: View {
                             .gesture(
                                 DragGesture(minimumDistance: 0)
                                     .onChanged { value in
-                                        let originX = geo[proxy.plotAreaFrame].origin.x
+                                        let originX = geo[proxy.plotFrame].origin.x
                                         let xPos = value.location.x - originX
-                                        guard xPos >= 0, xPos <= geo[proxy.plotAreaFrame].width else {
+                                        guard xPos >= 0, xPos <= geo[proxy.plotFrame].width else {
                                             selectedChartMonth = nil; return
                                         }
                                         if let raw: Int = proxy.value(atX: xPos) {

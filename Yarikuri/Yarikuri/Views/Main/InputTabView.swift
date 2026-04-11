@@ -185,7 +185,7 @@ private struct InputMascotBanner: View {
         }
         .frame(height: 110)
         .shadow(color: AppColor.shadowColor, radius: 5, x: 0, y: 2)
-        .onChange(of: levelUpTrigger) { triggered in
+        .onChange(of: levelUpTrigger) { _, triggered in
             if triggered {
                 // バウンス
                 withAnimation(.spring(response: 0.18, dampingFraction: 0.4)) { bounce = -16 }

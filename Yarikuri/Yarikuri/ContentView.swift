@@ -26,7 +26,7 @@ struct ContentView: View {
         }
         .animation(.easeInOut(duration: 0.4), value: appState.userProfile?.isOnboardingCompleted)
         .animation(.easeInOut(duration: 0.5), value: hasShownSplash)
-        .onChange(of: appState.currentPraise) { praise in
+        .onChange(of: appState.currentPraise) { _, praise in
             if let praise = praise {
                 PraiseWindowOverlay.shared.show(item: praise, appState: appState)
             } else {
