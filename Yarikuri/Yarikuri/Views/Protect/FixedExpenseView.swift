@@ -280,9 +280,10 @@ struct FixedExpenseView: View {
                             .gesture(
                                 DragGesture(minimumDistance: 0)
                                     .onChanged { value in
-                                        let originX = geo[proxy.plotFrame].origin.x
+                                        guard let plotFrame = proxy.plotFrame else { return }
+                                        let originX = geo[plotFrame].origin.x
                                         let xPos = value.location.x - originX
-                                        guard xPos >= 0, xPos <= geo[proxy.plotFrame].width else {
+                                        guard xPos >= 0, xPos <= geo[plotFrame].width else {
                                             selectedChartMonth = nil; return
                                         }
                                         if let raw: Int = proxy.value(atX: xPos) {

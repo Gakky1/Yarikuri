@@ -739,9 +739,10 @@ struct DebtRepaymentChartView: View {
                         .gesture(
                             DragGesture(minimumDistance: 0)
                                 .onChanged { value in
-                                    let plotOriginX = geo[proxy.plotFrame].origin.x
+                                    guard let plotFrame = proxy.plotFrame else { return }
+                                    let plotOriginX = geo[plotFrame].origin.x
                                     let xPos = value.location.x - plotOriginX
-                                    guard xPos >= 0, xPos <= geo[proxy.plotFrame].width else {
+                                    guard xPos >= 0, xPos <= geo[plotFrame].width else {
                                         selectedMonth = nil; selectedBalance = nil; return
                                     }
                                     if let rawMonth: Int = proxy.value(atX: xPos) {
