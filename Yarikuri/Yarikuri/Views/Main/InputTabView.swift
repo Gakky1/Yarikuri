@@ -9,15 +9,7 @@ struct InputTabView: View {
 
     enum InputTab { case expense, income }
 
-    private var inputLevel: Int {
-        switch appState.inputXpCount {
-        case 0..<3:   return 1
-        case 3..<7:   return 2
-        case 7..<13:  return 3
-        case 13..<21: return 4
-        default:      return 5
-        }
-    }
+    private var inputLevel: Int { appState.yarikurinLevel }
 
     var body: some View {
         ZStack {
@@ -36,7 +28,7 @@ struct InputTabView: View {
                     // やりくりんマスコット
                     InputMascotBanner(
                         level: inputLevel,
-                        xpCount: appState.inputXpCount,
+                        xpCount: appState.yarikurinTotalXp,
                         levelUpTrigger: levelUpTrigger
                     )
 
@@ -120,9 +112,15 @@ private struct InputMascotBanner: View {
 
             HStack(spacing: 14) {
                 // やりくりん
-                CoronView(size: 56, emotion: level >= 4 ? .happy : .normal, animate: true, level: level)
+                CoronView(size: 56, emotion: level >= 5 ? .celebrate : level >= 4 ? .happy : .normal, animate: true, level: level)
                     .frame(width: 72, height: 66)
                     .offset(y: bounce)
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.18, dampingFraction: 0.4)) { bounce = -16 }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.45)) { bounce = 0 }
+                        }
+                    }
 
                 VStack(alignment: .leading, spacing: 6) {
                     // 名前 + レベルバッジ
@@ -157,7 +155,7 @@ private struct InputMascotBanner: View {
                                 }
                             }
                             .frame(height: 7)
-                            Text("入力するたびにポイントが溜まるよ！ あと \(max(0, nextLevelAt - xpCount)) 回でLv.\(level + 1)")
+                            Text("あと \(max(0, nextLevelAt - xpCount)) ポイントでLv.\(level + 1)")
                                 .font(.system(size: 10))
                                 .foregroundColor(AppColor.textSecondary)
                         }

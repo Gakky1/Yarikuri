@@ -17,16 +17,7 @@ struct ProtectAnimationView: View {
         }
     }
 
-    private var mascotLevel: Int {
-        let c = appState.completedTaskIds.count
-        switch c {
-        case 0..<3:   return 1
-        case 3..<7:   return 2
-        case 7..<13:  return 3
-        case 13..<21: return 4
-        default:      return 5
-        }
-    }
+    private var mascotLevel: Int { appState.yarikurinLevel }
 
     private var items: Set<String> { Set(config.activeItems) }
 
@@ -161,7 +152,7 @@ struct ProtectAnimationView: View {
             }
 
             // やりくりん
-            CoronView(size: 50, emotion: .cheer, animate: true, level: mascotLevel)
+            CoronView(size: 50, emotion: mascotLevel >= 5 ? .celebrate : mascotLevel >= 4 ? .happy : .normal, animate: true, level: mascotLevel)
                 .frame(width: 68, height: 76)
                 .offset(x: -10, y: floorTopY - 76/2 + jumpOffset)
                 .onTapGesture { bounce() }

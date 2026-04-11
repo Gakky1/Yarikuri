@@ -85,6 +85,18 @@ final class AppState: ObservableObject {
         didSet { UserDefaults.standard.set(inputXpCount, forKey: "inputXpCount") }
     }
 
+    // MARK: - やりくりん統一レベル（全タブ共通）
+    var yarikurinTotalXp: Int { inputXpCount + completedTaskIds.count }
+    var yarikurinLevel: Int {
+        switch yarikurinTotalXp {
+        case 0..<3:   return 1
+        case 3..<7:   return 2
+        case 7..<13:  return 3
+        case 13..<21: return 4
+        default:      return 5
+        }
+    }
+
     // MARK: - レイアウトカスタマイズ（支出を減らす・収入を増やす）
     @Published var protectCardOrder: [String] = UserDefaults.standard.stringArray(forKey: "protectCardOrder")
         ?? ["fixedExpense", "variablePayment", "debtNavi", "support", "howTo", "secret"] {

@@ -10,6 +10,7 @@ struct MyPageView: View {
     @State private var showNicknameEdit = false
     @State private var showDreamEdit = false
     @State private var showPrefectureSelect = false
+    @State private var profileCoronBounce: CGFloat = 0
 
     var body: some View {
         ZStack {
@@ -66,9 +67,21 @@ struct MyPageView: View {
                         startPoint: .topLeading, endPoint: .bottomTrailing
                     ))
                     .frame(width: 64, height: 64)
-                CoronView(size: 42, emotion: .normal, animate: false)
-                    .frame(width: 64, height: 54)
-                    .clipped()
+                CoronView(
+                    size: 42,
+                    emotion: appState.yarikurinLevel >= 5 ? .celebrate : appState.yarikurinLevel >= 4 ? .happy : .normal,
+                    animate: true,
+                    level: appState.yarikurinLevel
+                )
+                .frame(width: 64, height: 54)
+                .clipped()
+                .offset(y: profileCoronBounce)
+                .onTapGesture {
+                    withAnimation(.spring(response: 0.18, dampingFraction: 0.4)) { profileCoronBounce = -12 }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.45)) { profileCoronBounce = 0 }
+                    }
+                }
             }
 
             VStack(alignment: .leading, spacing: 4) {

@@ -236,17 +236,7 @@ struct MascotCard: View {
     @State private var tapBounce: CGFloat = 0
     @State private var showLevelSheet = false
 
-    private var completedCount: Int { appState.completedTaskIds.count }
-
-    private var level: Int {
-        switch completedCount {
-        case 0..<3:   return 1
-        case 3..<7:   return 2
-        case 7..<13:  return 3
-        case 13..<21: return 4
-        default:      return 5
-        }
-    }
+    private var level: Int { appState.yarikurinLevel }
 
     private var nextLevelAt: Int {
         switch level {
@@ -279,7 +269,7 @@ struct MascotCard: View {
     private var progressRatio: Double {
         guard level < 5 else { return 1.0 }
         let span = Double(nextLevelAt - prevLevelAt)
-        let progress = Double(completedCount - prevLevelAt)
+        let progress = Double(appState.yarikurinTotalXp - prevLevelAt)
         return min(1.0, max(0.0, progress / span))
     }
 
