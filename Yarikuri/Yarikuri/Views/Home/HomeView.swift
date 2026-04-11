@@ -344,7 +344,7 @@ struct MascotCard: View {
                                 }
                             }
                             .frame(height: 8)
-                            Text("次まであと \(max(0, nextLevelAt - completedCount)) タスク")
+                            Text("次まであと \(max(0, nextLevelAt - appState.yarikurinTotalXp)) ポイント")
                                 .font(.system(size: 11))
                                 .foregroundColor(AppColor.textSecondary)
                         }
