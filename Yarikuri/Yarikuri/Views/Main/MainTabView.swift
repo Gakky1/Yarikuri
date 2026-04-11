@@ -1,6 +1,7 @@
 import SwiftUI
 import AVFoundation
 import UIKit
+import Charts
 
 // MARK: - メインタブビュー（スワイプ対応）
 struct MainTabView: View {
