@@ -674,33 +674,53 @@ struct ExpenseChartSheet: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.dismiss) private var dismiss
 
-    private struct BarData: Identifiable {
+    // 積み上げ棒グラフ用データ
+    private struct StackItem: Identifiable {
         let id = UUID()
-        let label: String
-        let value: Int
-        let isCurrent: Bool
+        let monthKey: Int    // yyyyMM（軸の順序づけ用）
+        let monthLabel: String
+        let category: String
+        let amount: Int
     }
 
-    private var chartData: [BarData] {
+    private let categoryOrder = ["固定費", "変動費", "月返済額"]
+    private let categoryColors: [String: Color] = [
+        "固定費":   AppColor.primary,
+        "変動費":   AppColor.caution,
+        "月返済額": AppColor.danger,
+    ]
+
+    private var stackItems: [StackItem] {
         let cal = Calendar.current
         let now = Date()
-        var result: [BarData] = []
-        for offset in stride(from: -5, through: 0, by: 1) {
+        var result: [StackItem] = []
+        for offset in stride(from: -11, through: 0, by: 1) {
             guard let date = cal.date(byAdding: .month, value: offset, to: now) else { continue }
             let y = cal.component(.year, from: date)
             let m = cal.component(.month, from: date)
-            let isCurrent = offset == 0
-            let value: Int
-            if isCurrent {
-                value = appState.monthlyTotalExpenses
+            let key = y * 100 + m
+            let label = "\(m)月"
+            let fixed: Int
+            let variable: Int
+            if offset == 0 {
+                fixed    = appState.totalFixedExpenses
+                variable = appState.totalScheduledPayments
             } else {
-                guard let fixed = appState.fixedExpenseHistory.first(where: { $0.year == y && $0.month == m })?.totalAmount else { continue }
-                let scheduled = appState.scheduledPaymentHistory.first(where: { $0.year == y && $0.month == m })?.totalAmount ?? 0
-                value = fixed + scheduled + appState.totalMonthlyDebtPayments
+                guard let f = appState.fixedExpenseHistory.first(where: { $0.year == y && $0.month == m })?.totalAmount else { continue }
+                fixed    = f
+                variable = appState.scheduledPaymentHistory.first(where: { $0.year == y && $0.month == m })?.totalAmount ?? 0
             }
-            result.append(BarData(label: "\(m)月", value: value, isCurrent: isCurrent))
+            let debt = appState.totalMonthlyDebtPayments
+            result.append(StackItem(monthKey: key, monthLabel: label, category: "固定費",   amount: fixed))
+            result.append(StackItem(monthKey: key, monthLabel: label, category: "変動費",   amount: variable))
+            result.append(StackItem(monthKey: key, monthLabel: label, category: "月返済額", amount: debt))
         }
         return result
+    }
+
+    // 表示用月キー（重複なし・昇順）
+    private var sortedMonthKeys: [Int] {
+        Array(Set(stackItems.map(\.monthKey))).sorted()
     }
 
     var body: some View {
@@ -710,7 +730,7 @@ struct ExpenseChartSheet: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
                         summaryCard
-                        barChartCard
+                        stackedChartCard
                         Spacer().frame(height: 20)
                     }
                     .padding(.horizontal, 16)
@@ -728,11 +748,12 @@ struct ExpenseChartSheet: View {
         }
     }
 
+    // MARK: サマリー
     private var summaryCard: some View {
         let diff = appState.expensesComparedToLastMonth
-        return HStack {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("今月の支出")
+        return VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("今月の支出合計")
                     .font(.system(size: 13))
                     .foregroundColor(AppColor.textSecondary)
                 Text(appState.monthlyTotalExpenses.yen)
@@ -742,7 +763,14 @@ struct ExpenseChartSheet: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(diff > 0 ? AppColor.danger : diff < 0 ? AppColor.secondary : AppColor.textSecondary)
             }
-            Spacer()
+            Divider()
+            HStack(spacing: 0) {
+                summaryItem(label: "固定費",   amount: appState.totalFixedExpenses,         color: AppColor.primary)
+                Divider().frame(height: 36)
+                summaryItem(label: "変動費",   amount: appState.totalScheduledPayments,     color: AppColor.caution)
+                Divider().frame(height: 36)
+                summaryItem(label: "月返済額", amount: appState.totalMonthlyDebtPayments,   color: AppColor.danger)
+            }
         }
         .padding(16)
         .background(AppColor.cardBackground)
@@ -750,37 +778,80 @@ struct ExpenseChartSheet: View {
         .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
     }
 
-    private var barChartCard: some View {
-        let data = chartData
-        let maxVal = data.map(\.value).max() ?? 1
-        return VStack(alignment: .leading, spacing: 16) {
-            Text("月別支出（直近6ヶ月）")
+    private func summaryItem(label: String, amount: Int, color: Color) -> some View {
+        VStack(spacing: 3) {
+            Text(label)
+                .font(.system(size: 11))
+                .foregroundColor(AppColor.textSecondary)
+            Text(amount.yen)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(color)
+                .minimumScaleFactor(0.7).lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: 積み上げ棒グラフ
+    private var stackedChartCard: some View {
+        let items = stackItems
+        let keys = sortedMonthKeys
+        return VStack(alignment: .leading, spacing: 14) {
+            Text("月別支出内訳（過去1年）")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(AppColor.textSecondary)
-            if data.isEmpty {
+
+            if items.isEmpty {
                 Text("データがありません")
                     .foregroundColor(AppColor.textTertiary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
             } else {
-                HStack(alignment: .bottom, spacing: 6) {
-                    ForEach(data) { bar in
-                        let ratio = maxVal > 0 ? CGFloat(bar.value) / CGFloat(maxVal) : 0
-                        VStack(spacing: 4) {
-                            Text(bar.value >= 10000 ? "\(bar.value / 10000)万" : "\(bar.value / 1000)千")
-                                .font(.system(size: 9, weight: .medium))
-                                .foregroundColor(bar.isCurrent ? AppColor.primary : AppColor.textTertiary)
-                                .lineLimit(1)
-                            RoundedRectangle(cornerRadius: 5)
-                                .fill(bar.isCurrent ? AppColor.primary : AppColor.primary.opacity(0.35))
-                                .frame(height: max(4, 160 * ratio))
-                            Text(bar.label)
-                                .font(.system(size: 10))
-                                .foregroundColor(bar.isCurrent ? AppColor.primary : AppColor.textSecondary)
+                Chart(items) { item in
+                    BarMark(
+                        x: .value("月", item.monthKey),
+                        y: .value("金額", item.amount)
+                    )
+                    .foregroundStyle(categoryColors[item.category] ?? .gray)
+                }
+                .chartXAxis {
+                    AxisMarks(values: keys) { val in
+                        AxisValueLabel {
+                            if let key = val.as(Int.self),
+                               let item = items.first(where: { $0.monthKey == key }) {
+                                Text(item.monthLabel)
+                                    .font(.system(size: 9))
+                            }
                         }
-                        .frame(maxWidth: .infinity)
                     }
                 }
+                .chartYAxis {
+                    AxisMarks(position: .leading) { val in
+                        AxisGridLine()
+                        AxisValueLabel {
+                            if let v = val.as(Int.self) {
+                                Text("\(v / 10000)万")
+                                    .font(.system(size: 9))
+                            }
+                        }
+                    }
+                }
+                .chartLegend(.hidden)
+                .frame(height: 220)
+
+                // 凡例
+                HStack(spacing: 16) {
+                    ForEach(categoryOrder, id: \.self) { cat in
+                        HStack(spacing: 5) {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(categoryColors[cat] ?? .gray)
+                                .frame(width: 12, height: 12)
+                            Text(cat)
+                                .font(.system(size: 11))
+                                .foregroundColor(AppColor.textSecondary)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
             }
         }
         .padding(16)
