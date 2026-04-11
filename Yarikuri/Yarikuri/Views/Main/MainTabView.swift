@@ -701,16 +701,13 @@ struct ExpenseChartSheet: View {
             let m = cal.component(.month, from: date)
             let key = y * 100 + m
             let label = "\(m)月"
-            let fixed: Int
-            let variable: Int
-            if offset == 0 {
-                fixed    = appState.totalFixedExpenses
-                variable = appState.totalScheduledPayments
-            } else {
-                guard let f = appState.fixedExpenseHistory.first(where: { $0.year == y && $0.month == m })?.totalAmount else { continue }
-                fixed    = f
-                variable = appState.scheduledPaymentHistory.first(where: { $0.year == y && $0.month == m })?.totalAmount ?? 0
-            }
+            // 履歴があればそれを、なければ現在値をフォールバック（全12ヶ月を必ず表示）
+            let fixed = appState.fixedExpenseHistory
+                .first(where: { $0.year == y && $0.month == m })?.totalAmount
+                ?? appState.totalFixedExpenses
+            let variable = appState.scheduledPaymentHistory
+                .first(where: { $0.year == y && $0.month == m })?.totalAmount
+                ?? appState.totalScheduledPayments
             let debt = appState.totalMonthlyDebtPayments
             result.append(StackItem(monthKey: key, monthLabel: label, category: "固定費",   amount: fixed))
             result.append(StackItem(monthKey: key, monthLabel: label, category: "変動費",   amount: variable))
