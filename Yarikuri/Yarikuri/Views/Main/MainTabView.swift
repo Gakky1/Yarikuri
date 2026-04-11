@@ -509,40 +509,68 @@ struct ProtectSummaryCard: View {
     @State private var showDetail = false
 
     var body: some View {
-        HStack(spacing: 0) {
-            VStack(spacing: 4) {
-                Text("💰").font(.system(size: 22))
-                Text(appState.monthlyTotalExpenses.yen)
-                    .font(.system(size: 19, weight: .bold))
-                    .foregroundColor(AppColor.primary)
-                    .minimumScaleFactor(0.7).lineLimit(1)
-                Text("今月の支出")
-                    .font(.system(size: 10))
-                    .foregroundColor(AppColor.textSecondary)
-                let diff = appState.expensesComparedToLastMonth
-                Text("先月比\(diff > 0 ? "+" : "")\(diff.yen)")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(diff > 0 ? AppColor.danger : diff < 0 ? AppColor.secondary : AppColor.textSecondary)
-            }
-            .frame(maxWidth: .infinity)
-
-            Divider().frame(height: 40)
-
-            Button(action: { showDetail = true }) {
-                VStack(spacing: 4) {
-                    Image(systemName: "chevron.right.circle.fill")
-                        .font(.system(size: 22))
-                        .foregroundColor(AppColor.primary.opacity(0.7))
-                    Text("詳細")
-                        .font(.system(size: 10))
+        VStack(spacing: 0) {
+            // 上段：2指標横並び
+            HStack(spacing: 0) {
+                // 今月の支出
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("💰 今月の支出")
+                        .font(.system(size: 11))
                         .foregroundColor(AppColor.textSecondary)
+                    Text(appState.monthlyTotalExpenses.yen)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(AppColor.primary)
+                        .minimumScaleFactor(0.7).lineLimit(1)
+                    let diff = appState.expensesComparedToLastMonth
+                    HStack(spacing: 3) {
+                        Image(systemName: diff > 0 ? "arrow.up" : diff < 0 ? "arrow.down" : "minus")
+                            .font(.system(size: 9, weight: .bold))
+                        Text("先月比\(diff > 0 ? "+" : "")\(diff.yen)")
+                            .font(.system(size: 10, weight: .semibold))
+                    }
+                    .foregroundColor(diff > 0 ? AppColor.danger : diff < 0 ? AppColor.secondary : AppColor.textSecondary)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Divider().frame(height: 48).padding(.horizontal, 8)
+
+                // 残予算
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("💳 残予算")
+                        .font(.system(size: 11))
+                        .foregroundColor(AppColor.textSecondary)
+                    Text(appState.remainingBudget.yen)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(appState.remainingBudget >= 0 ? AppColor.safe : AppColor.danger)
+                        .minimumScaleFactor(0.7).lineLimit(1)
+                    Text("手取りから計算")
+                        .font(.system(size: 10))
+                        .foregroundColor(AppColor.textTertiary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+            .padding(.bottom, 12)
+
+            Divider().padding(.horizontal, 12)
+
+            // 下段：詳細ボタン（全幅）
+            Button(action: { showDetail = true }) {
+                HStack(spacing: 6) {
+                    Image(systemName: "chart.bar.fill")
+                        .font(.system(size: 13))
+                    Text("グラフで詳細を見る")
+                        .font(.system(size: 13, weight: .semibold))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                }
+                .foregroundColor(AppColor.primary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
             }
             .buttonStyle(.plain)
-            .frame(width: 56)
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 8)
         .background(
             LinearGradient(
                 colors: [Color(red: 0.93, green: 0.91, blue: 1.0), AppColor.primaryLight],
@@ -562,41 +590,71 @@ struct GrowSummaryCard: View {
     @EnvironmentObject var appState: AppState
     @State private var showDetail = false
 
+    private let incomeGreen = Color(red: 0.2, green: 0.6, blue: 0.3)
+
     var body: some View {
-        HStack(spacing: 0) {
-            VStack(spacing: 4) {
-                Text("💹").font(.system(size: 22))
-                Text(appState.lastMonthIncome.yen)
-                    .font(.system(size: 19, weight: .bold))
-                    .foregroundColor(Color(red: 0.2, green: 0.6, blue: 0.3))
-                    .minimumScaleFactor(0.7).lineLimit(1)
-                Text("先月の収入")
-                    .font(.system(size: 10))
-                    .foregroundColor(AppColor.textSecondary)
-                let diff = appState.incomeComparedToPreviousMonth
-                Text("先々月比\(diff > 0 ? "+" : "")\(diff.yen)")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(diff > 0 ? AppColor.tertiary : diff < 0 ? AppColor.danger : AppColor.textSecondary)
-            }
-            .frame(maxWidth: .infinity)
-
-            Divider().frame(height: 40)
-
-            Button(action: { showDetail = true }) {
-                VStack(spacing: 4) {
-                    Image(systemName: "chevron.right.circle.fill")
-                        .font(.system(size: 22))
-                        .foregroundColor(Color(red: 0.18, green: 0.62, blue: 0.35).opacity(0.7))
-                    Text("詳細")
-                        .font(.system(size: 10))
+        VStack(spacing: 0) {
+            // 上段：2指標横並び
+            HStack(spacing: 0) {
+                // 先月の収入
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("💹 先月の収入")
+                        .font(.system(size: 11))
                         .foregroundColor(AppColor.textSecondary)
+                    Text(appState.lastMonthIncome.yen)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(incomeGreen)
+                        .minimumScaleFactor(0.7).lineLimit(1)
+                    let diff = appState.incomeComparedToPreviousMonth
+                    HStack(spacing: 3) {
+                        Image(systemName: diff > 0 ? "arrow.up" : diff < 0 ? "arrow.down" : "minus")
+                            .font(.system(size: 9, weight: .bold))
+                        Text("先々月比\(diff > 0 ? "+" : "")\(diff.yen)")
+                            .font(.system(size: 10, weight: .semibold))
+                    }
+                    .foregroundColor(diff > 0 ? AppColor.tertiary : diff < 0 ? AppColor.danger : AppColor.textSecondary)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Divider().frame(height: 48).padding(.horizontal, 8)
+
+                // 今月の手取り目安
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("💴 今月の手取り")
+                        .font(.system(size: 11))
+                        .foregroundColor(AppColor.textSecondary)
+                    Text(appState.monthlyIncome.yen)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(AppColor.textPrimary)
+                        .minimumScaleFactor(0.7).lineLimit(1)
+                    Text("目安ベース")
+                        .font(.system(size: 10))
+                        .foregroundColor(AppColor.textTertiary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+            .padding(.bottom, 12)
+
+            Divider().padding(.horizontal, 12)
+
+            // 下段：詳細ボタン（全幅）
+            Button(action: { showDetail = true }) {
+                HStack(spacing: 6) {
+                    Image(systemName: "chart.bar.fill")
+                        .font(.system(size: 13))
+                    Text("グラフで詳細を見る")
+                        .font(.system(size: 13, weight: .semibold))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                }
+                .foregroundColor(incomeGreen)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
             }
             .buttonStyle(.plain)
-            .frame(width: 56)
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 8)
         .background(
             LinearGradient(
                 colors: [Color(red: 0.90, green: 0.98, blue: 0.91), Color(red: 0.99, green: 0.98, blue: 0.85)],
