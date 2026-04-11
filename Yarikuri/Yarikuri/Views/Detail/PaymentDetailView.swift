@@ -184,30 +184,33 @@ struct PaymentDetailView: View {
             } else {
                 Chart {
                     ForEach(paymentChartPoints) { point in
+                        let color = paymentColor(for: point.year)
+                        let gradient = LinearGradient(
+                            colors: [color.opacity(0.22), color.opacity(0.0)],
+                            startPoint: .top, endPoint: .bottom
+                        )
                         AreaMark(
                             x: .value("月", point.month),
                             yStart: .value("支払い", 0),
                             yEnd: .value("支払い", point.amount),
                             series: .value("年", String(point.year))
                         )
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [paymentColor(for: point.year).opacity(0.22), paymentColor(for: point.year).opacity(0.0)],
-                                startPoint: .top, endPoint: .bottom
-                            )
-                        )
+                        .foregroundStyle(gradient)
                         .interpolationMethod(.catmullRom)
-
+                    }
+                    ForEach(paymentChartPoints) { point in
+                        let color = paymentColor(for: point.year)
                         LineMark(
                             x: .value("月", point.month),
                             y: .value("支払い", point.amount),
                             series: .value("年", String(point.year))
                         )
-                        .foregroundStyle(paymentColor(for: point.year))
+                        .foregroundStyle(color)
                         .lineStyle(StrokeStyle(lineWidth: 2.5))
                         .interpolationMethod(.catmullRom)
-                        .shadow(color: paymentColor(for: point.year).opacity(0.35), radius: 4, x: 0, y: 2)
-
+                        .shadow(color: color.opacity(0.35), radius: 4, x: 0, y: 2)
+                    }
+                    ForEach(paymentChartPoints) { point in
                         PointMark(
                             x: .value("月", point.month),
                             y: .value("支払い", point.amount)
