@@ -80,7 +80,19 @@ final class AppState: ObservableObject {
     // MARK: - 部屋進化用カウント（累計・永続）
     @Published var protectActionsTotal: Int = UserDefaults.standard.integer(forKey: "protectActionsTotal")
     @Published var growActionsTotal: Int    = UserDefaults.standard.integer(forKey: "growActionsTotal")
-    @Published var consecutiveLoginDays: Int = UserDefaults.standard.integer(forKey: "consecutiveLoginDays")
+    // ログイン日履歴から連続日数を動的に計算（カレンダーと常に一致）
+    var consecutiveLoginDays: Int {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let cal = Calendar.current
+        var streak = 0
+        var checkDate = cal.startOfDay(for: Date())
+        while loginDateHistory.contains(formatter.string(from: checkDate)) {
+            streak += 1
+            checkDate = cal.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
+        }
+        return streak
+    }
     @Published var inputXpCount: Int = UserDefaults.standard.integer(forKey: "inputXpCount") {
         didSet { UserDefaults.standard.set(inputXpCount, forKey: "inputXpCount") }
     }
@@ -227,10 +239,8 @@ final class AppState: ObservableObject {
         // デモ用：部屋・マスコットをLv5に、ログインボーナス全解放
         protectActionsTotal = 25
         growActionsTotal = 25
-        consecutiveLoginDays = 20
         UserDefaults.standard.set(25, forKey: "protectActionsTotal")
         UserDefaults.standard.set(25, forKey: "growActionsTotal")
-        UserDefaults.standard.set(20, forKey: "consecutiveLoginDays")
         // デモ用：過去20日分のログイン日履歴を生成
         let demoFormatter = DateFormatter()
         demoFormatter.dateFormat = "yyyy-MM-dd"
@@ -952,22 +962,15 @@ final class AppState: ObservableObject {
     func checkLoginStreak() {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        if let last = UserDefaults.standard.object(forKey: "lastLoginDate") as? Date {
-            let lastDay = calendar.startOfDay(for: last)
-            guard !calendar.isDate(today, inSameDayAs: lastDay) else { return }
-            let diff = calendar.dateComponents([.day], from: lastDay, to: today).day ?? 0
-            consecutiveLoginDays = diff == 1 ? consecutiveLoginDays + 1 : 1
-        } else {
-            consecutiveLoginDays = 1
-        }
-        UserDefaults.standard.set(consecutiveLoginDays, forKey: "consecutiveLoginDays")
-        UserDefaults.standard.set(today, forKey: "lastLoginDate")
-        // ログイン日履歴に追加
+        // 同日に既に記録済みならスキップ
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let dateStr = formatter.string(from: today)
+        guard !loginDateHistory.contains(dateStr) else { return }
+        // ログイン日履歴に追加（consecutiveLoginDays は履歴から自動計算される）
         loginDateHistory.insert(dateStr)
         UserDefaults.standard.set(Array(loginDateHistory), forKey: "loginDateHistory")
+        UserDefaults.standard.set(today, forKey: "lastLoginDate")
         // マイルストーン達成時はトースト表示フラグを立てる
         if [3, 7, 14, 30].contains(consecutiveLoginDays) {
             pendingStreakMilestone = consecutiveLoginDays
@@ -1119,7 +1122,6 @@ final class AppState: ObservableObject {
         communityPosts = CommunityPost.sampleData
         protectActionsTotal = 0
         growActionsTotal = 0
-        consecutiveLoginDays = 0
         UserDefaults.standard.removeObject(forKey: "protectActionsTotal")
         UserDefaults.standard.removeObject(forKey: "growActionsTotal")
         UserDefaults.standard.removeObject(forKey: "consecutiveLoginDays")
