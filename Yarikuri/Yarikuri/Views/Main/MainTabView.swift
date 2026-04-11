@@ -199,8 +199,12 @@ struct ProtectScreenView: View {
                     }
                     .padding(.top, 8)
 
-                    ProtectSummaryCard()
-                    ProtectAnimationView()
+                    if !appState.protectHiddenCards.contains("summaryCard") {
+                        ProtectSummaryCard()
+                    }
+                    if !appState.protectHiddenCards.contains("animationRoom") {
+                        ProtectAnimationView()
+                    }
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         ForEach(visibleProtectCards, id: \.self) { cardId in
@@ -382,8 +386,12 @@ struct GrowScreenView: View {
                     }
                     .padding(.top, 8)
 
-                    GrowSummaryCard()
-                    GrowAnimationView()
+                    if !appState.growHiddenCards.contains("summaryCard") {
+                        GrowSummaryCard()
+                    }
+                    if !appState.growHiddenCards.contains("animationRoom") {
+                        GrowAnimationView()
+                    }
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         ForEach(visibleGrowCards, id: \.self) { cardId in
@@ -863,9 +871,39 @@ private struct ProtectLayoutEditSheet: View {
         ("secret",          "🔑", "節約裏ワザ集",     true),
     ]
 
+    private let fixedItems: [(id: String, emoji: String, name: String)] = [
+        ("summaryCard",   "📊", "サマリーカード"),
+        ("animationRoom", "🏠", "やりくりんの部屋"),
+    ]
+
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    ForEach(fixedItems, id: \.id) { item in
+                        HStack(spacing: 14) {
+                            Button { toggle(item.id) } label: {
+                                Image(systemName: hidden.contains(item.id) ? "eye.slash" : "eye")
+                                    .font(.system(size: 17))
+                                    .foregroundColor(hidden.contains(item.id) ? AppColor.textTertiary : AppColor.primary)
+                                    .frame(width: 28, height: 28)
+                            }
+                            .buttonStyle(.plain)
+
+                            Text(item.emoji).font(.system(size: 20))
+
+                            Text(item.name)
+                                .font(.system(size: 15))
+                                .foregroundColor(hidden.contains(item.id) ? AppColor.textTertiary : AppColor.textPrimary)
+
+                            Spacer()
+                        }
+                    }
+                } header: {
+                    Text("👁 で表示/非表示を切り替え（固定）")
+                        .font(.system(size: 12))
+                }
+
                 Section {
                     ForEach(order, id: \.self) { cardId in
                         if let card = allCards.first(where: { $0.id == cardId }) {
@@ -936,6 +974,11 @@ private struct GrowLayoutEditSheet: View {
     @State private var order: [String] = []
     @State private var hidden: Set<String> = []
 
+    private let fixedItems: [(id: String, emoji: String, name: String)] = [
+        ("summaryCard",   "📊", "サマリーカード"),
+        ("animationRoom", "🏠", "やりくりんの部屋"),
+    ]
+
     private let allCards: [(id: String, emoji: String, name: String, locked: Bool)] = [
         ("income",    "💴", "収入",           false),
         ("fukugyou",  "🎥", "副業で稼ぐ",     false),
@@ -948,6 +991,31 @@ private struct GrowLayoutEditSheet: View {
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    ForEach(fixedItems, id: \.id) { item in
+                        HStack(spacing: 14) {
+                            Button { toggle(item.id) } label: {
+                                Image(systemName: hidden.contains(item.id) ? "eye.slash" : "eye")
+                                    .font(.system(size: 17))
+                                    .foregroundColor(hidden.contains(item.id) ? AppColor.textTertiary : AppColor.primary)
+                                    .frame(width: 28, height: 28)
+                            }
+                            .buttonStyle(.plain)
+
+                            Text(item.emoji).font(.system(size: 20))
+
+                            Text(item.name)
+                                .font(.system(size: 15))
+                                .foregroundColor(hidden.contains(item.id) ? AppColor.textTertiary : AppColor.textPrimary)
+
+                            Spacer()
+                        }
+                    }
+                } header: {
+                    Text("👁 で表示/非表示を切り替え（固定）")
+                        .font(.system(size: 12))
+                }
+
                 Section {
                     ForEach(order, id: \.self) { cardId in
                         if let card = allCards.first(where: { $0.id == cardId }) {
