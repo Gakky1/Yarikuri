@@ -899,8 +899,6 @@ private struct ProtectLayoutEditSheet: View {
                 }
             }
             .environment(\.editMode, .constant(.active))
-            .navigationTitle("レイアウトを編集")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("保存") {
@@ -909,6 +907,11 @@ private struct ProtectLayoutEditSheet: View {
                         dismiss()
                     }
                     .foregroundColor(AppColor.primary)
+                }
+                ToolbarItem(placement: .principal) {
+                    Text("レイアウトを編集")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(AppColor.textPrimary)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("キャンセル") { dismiss() }
@@ -978,8 +981,6 @@ private struct GrowLayoutEditSheet: View {
                 }
             }
             .environment(\.editMode, .constant(.active))
-            .navigationTitle("レイアウトを編集")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("保存") {
@@ -988,6 +989,11 @@ private struct GrowLayoutEditSheet: View {
                         dismiss()
                     }
                     .foregroundColor(AppColor.primary)
+                }
+                ToolbarItem(placement: .principal) {
+                    Text("レイアウトを編集")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(AppColor.textPrimary)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("キャンセル") { dismiss() }
