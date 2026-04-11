@@ -528,19 +528,6 @@ struct ProtectSummaryCard: View {
 
             Divider().frame(height: 40)
 
-            VStack(spacing: 4) {
-                Text("📚").font(.system(size: 22))
-                Text("\(appState.monthlyProtectActions.count)件")
-                    .font(.system(size: 19, weight: .bold))
-                    .foregroundColor(AppColor.secondary)
-                Text("今月確認したこと")
-                    .font(.system(size: 10))
-                    .foregroundColor(AppColor.textSecondary)
-            }
-            .frame(maxWidth: .infinity)
-
-            Divider().frame(height: 40)
-
             Button(action: { showDetail = true }) {
                 VStack(spacing: 4) {
                     Image(systemName: "chevron.right.circle.fill")
@@ -565,12 +552,7 @@ struct ProtectSummaryCard: View {
         .cornerRadius(16)
         .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
         .sheet(isPresented: $showDetail) {
-            MonthlyActionsDetailSheet(
-                title: "今月の支出実績",
-                amountLabel: "今月の支出",
-                amountValue: appState.monthlyTotalExpenses.yen,
-                actions: appState.monthlyProtectActions
-            )
+            ExpenseChartSheet()
         }
     }
 }
@@ -600,19 +582,6 @@ struct GrowSummaryCard: View {
 
             Divider().frame(height: 40)
 
-            VStack(spacing: 4) {
-                Text("📚").font(.system(size: 22))
-                Text("\(appState.monthlyGrowActions.count)件")
-                    .font(.system(size: 19, weight: .bold))
-                    .foregroundColor(AppColor.primary)
-                Text("今月学んだこと")
-                    .font(.system(size: 10))
-                    .foregroundColor(AppColor.textSecondary)
-            }
-            .frame(maxWidth: .infinity)
-
-            Divider().frame(height: 40)
-
             Button(action: { showDetail = true }) {
                 VStack(spacing: 4) {
                     Image(systemName: "chevron.right.circle.fill")
@@ -637,115 +606,245 @@ struct GrowSummaryCard: View {
         .cornerRadius(16)
         .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
         .sheet(isPresented: $showDetail) {
-            MonthlyActionsDetailSheet(
-                title: "今月の増やし実績",
-                amountLabel: "先月の収入",
-                amountValue: appState.monthlyIncome.yen,
-                actions: appState.monthlyGrowActions
-            )
+            IncomeChartSheet()
         }
     }
 }
 
-// MARK: - 月間アクション詳細シート
-struct MonthlyActionsDetailSheet: View {
-    let title: String
-    let amountLabel: String
-    let amountValue: String
-    let actions: [CardAction]
-
+// MARK: - 支出グラフシート
+struct ExpenseChartSheet: View {
+    @EnvironmentObject var appState: AppState
     @Environment(\.dismiss) private var dismiss
 
-    private var dateFormatter: DateFormatter {
-        let f = DateFormatter()
-        f.dateFormat = "M/d HH:mm"
-        return f
+    private struct BarData: Identifiable {
+        let id = UUID()
+        let label: String
+        let value: Int
+        let isCurrent: Bool
+    }
+
+    private var chartData: [BarData] {
+        let cal = Calendar.current
+        let now = Date()
+        var result: [BarData] = []
+        for offset in stride(from: -5, through: 0, by: 1) {
+            guard let date = cal.date(byAdding: .month, value: offset, to: now) else { continue }
+            let y = cal.component(.year, from: date)
+            let m = cal.component(.month, from: date)
+            let isCurrent = offset == 0
+            let value: Int
+            if isCurrent {
+                value = appState.monthlyTotalExpenses
+            } else {
+                guard let fixed = appState.fixedExpenseHistory.first(where: { $0.year == y && $0.month == m })?.totalAmount else { continue }
+                let scheduled = appState.scheduledPaymentHistory.first(where: { $0.year == y && $0.month == m })?.totalAmount ?? 0
+                value = fixed + scheduled + appState.totalMonthlyDebtPayments
+            }
+            result.append(BarData(label: "\(m)月", value: value, isCurrent: isCurrent))
+        }
+        return result
     }
 
     var body: some View {
         NavigationStack {
             ZStack {
                 AppColor.background.ignoresSafeArea()
-                if actions.isEmpty {
-                    VStack(spacing: 16) {
-                        Text("📋").font(.system(size: 56))
-                        Text("まだ記録がありません")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(AppColor.textSecondary)
-                        Text("カードをタップすると\n行動が記録されます")
-                            .font(.system(size: 13))
-                            .foregroundColor(AppColor.textTertiary)
-                            .multilineTextAlignment(.center)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        summaryCard
+                        barChartCard
+                        Spacer().frame(height: 20)
                     }
-                } else {
-                    ScrollView(showsIndicators: false) {
-                        VStack(spacing: 14) {
-                            HStack(spacing: 10) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(amountLabel)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(AppColor.textSecondary)
-                                    Text(amountValue)
-                                        .font(.system(size: 28, weight: .bold))
-                                        .foregroundColor(AppColor.primary)
-                                }
-                                Spacer()
-                                VStack(alignment: .trailing, spacing: 4) {
-                                    Text("行動数")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(AppColor.textSecondary)
-                                    Text("\(actions.count)件")
-                                        .font(.system(size: 28, weight: .bold))
-                                        .foregroundColor(AppColor.secondary)
-                                }
-                            }
-                            .padding(16)
-                            .background(AppColor.cardBackground)
-                            .cornerRadius(16)
-                            .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
-
-                            VStack(spacing: 0) {
-                                ForEach(Array(actions.reversed().enumerated()), id: \.element.id) { idx, action in
-                                    HStack(spacing: 12) {
-                                        Text(action.emoji)
-                                            .font(.system(size: 26))
-                                            .frame(width: 36)
-                                        VStack(alignment: .leading, spacing: 3) {
-                                            Text(action.title)
-                                                .font(.system(size: 14, weight: .medium))
-                                                .foregroundColor(AppColor.textPrimary)
-                                            Text(dateFormatter.string(from: action.date))
-                                                .font(.system(size: 11))
-                                                .foregroundColor(AppColor.textTertiary)
-                                        }
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 11)
-                                    if idx < actions.count - 1 {
-                                        Divider().padding(.leading, 64)
-                                    }
-                                }
-                            }
-                            .background(AppColor.cardBackground)
-                            .cornerRadius(16)
-                            .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
-
-                            Spacer().frame(height: 20)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 8)
-                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
                 }
             }
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("支出の推移")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("閉じる") { dismiss() }
+                        .foregroundColor(AppColor.primary)
                 }
             }
         }
+    }
+
+    private var summaryCard: some View {
+        let diff = appState.expensesComparedToLastMonth
+        return HStack {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("今月の支出")
+                    .font(.system(size: 13))
+                    .foregroundColor(AppColor.textSecondary)
+                Text(appState.monthlyTotalExpenses.yen)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(AppColor.primary)
+                Text("先月比 \(diff > 0 ? "+" : "")\(diff.yen)")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(diff > 0 ? AppColor.danger : diff < 0 ? AppColor.secondary : AppColor.textSecondary)
+            }
+            Spacer()
+        }
+        .padding(16)
+        .background(AppColor.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
+    }
+
+    private var barChartCard: some View {
+        let data = chartData
+        let maxVal = data.map(\.value).max() ?? 1
+        return VStack(alignment: .leading, spacing: 16) {
+            Text("月別支出（直近6ヶ月）")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(AppColor.textSecondary)
+            if data.isEmpty {
+                Text("データがありません")
+                    .foregroundColor(AppColor.textTertiary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 40)
+            } else {
+                HStack(alignment: .bottom, spacing: 6) {
+                    ForEach(data) { bar in
+                        let ratio = maxVal > 0 ? CGFloat(bar.value) / CGFloat(maxVal) : 0
+                        VStack(spacing: 4) {
+                            Text(bar.value >= 10000 ? "\(bar.value / 10000)万" : "\(bar.value / 1000)千")
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundColor(bar.isCurrent ? AppColor.primary : AppColor.textTertiary)
+                                .lineLimit(1)
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(bar.isCurrent ? AppColor.primary : AppColor.primary.opacity(0.35))
+                                .frame(height: max(4, 160 * ratio))
+                            Text(bar.label)
+                                .font(.system(size: 10))
+                                .foregroundColor(bar.isCurrent ? AppColor.primary : AppColor.textSecondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(AppColor.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - 収入グラフシート
+struct IncomeChartSheet: View {
+    @EnvironmentObject var appState: AppState
+    @Environment(\.dismiss) private var dismiss
+
+    private let incomeGreen = Color(red: 0.2, green: 0.6, blue: 0.3)
+
+    private struct BarData: Identifiable {
+        let id = UUID()
+        let label: String
+        let value: Int
+        let isLatest: Bool
+    }
+
+    private var chartData: [BarData] {
+        let cal = Calendar.current
+        let now = Date()
+        var result: [BarData] = []
+        // 直近6ヶ月分を探す（先月〜6ヶ月前）
+        for offset in stride(from: -5, through: -1, by: 1) {
+            guard let date = cal.date(byAdding: .month, value: offset, to: now) else { continue }
+            let y = cal.component(.year, from: date)
+            let m = cal.component(.month, from: date)
+            guard let record = appState.incomeHistory.first(where: { $0.year == y && $0.month == m }) else { continue }
+            result.append(BarData(label: "\(m)月", value: record.amount, isLatest: offset == -1))
+        }
+        return result
+    }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                AppColor.background.ignoresSafeArea()
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        summaryCard
+                        barChartCard
+                        Spacer().frame(height: 20)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+                }
+            }
+            .navigationTitle("収入の推移")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("閉じる") { dismiss() }
+                        .foregroundColor(incomeGreen)
+                }
+            }
+        }
+    }
+
+    private var summaryCard: some View {
+        let diff = appState.incomeComparedToPreviousMonth
+        return HStack {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("先月の収入")
+                    .font(.system(size: 13))
+                    .foregroundColor(AppColor.textSecondary)
+                Text(appState.lastMonthIncome.yen)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(incomeGreen)
+                Text("先々月比 \(diff > 0 ? "+" : "")\(diff.yen)")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(diff > 0 ? AppColor.tertiary : diff < 0 ? AppColor.danger : AppColor.textSecondary)
+            }
+            Spacer()
+        }
+        .padding(16)
+        .background(AppColor.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
+    }
+
+    private var barChartCard: some View {
+        let data = chartData
+        let maxVal = data.map(\.value).max() ?? 1
+        return VStack(alignment: .leading, spacing: 16) {
+            Text("月別収入（直近6ヶ月）")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(AppColor.textSecondary)
+            if data.isEmpty {
+                Text("データがありません")
+                    .foregroundColor(AppColor.textTertiary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 40)
+            } else {
+                HStack(alignment: .bottom, spacing: 6) {
+                    ForEach(data) { bar in
+                        let ratio = maxVal > 0 ? CGFloat(bar.value) / CGFloat(maxVal) : 0
+                        VStack(spacing: 4) {
+                            Text(bar.value >= 10000 ? "\(bar.value / 10000)万" : "\(bar.value / 1000)千")
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundColor(bar.isLatest ? incomeGreen : AppColor.textTertiary)
+                                .lineLimit(1)
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(bar.isLatest ? incomeGreen : incomeGreen.opacity(0.35))
+                                .frame(height: max(4, 160 * ratio))
+                            Text(bar.label)
+                                .font(.system(size: 10))
+                                .foregroundColor(bar.isLatest ? incomeGreen : AppColor.textSecondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(AppColor.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: AppColor.shadowColor, radius: 4, x: 0, y: 2)
     }
 }
 
